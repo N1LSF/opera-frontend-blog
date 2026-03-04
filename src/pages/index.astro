@@ -1,53 +1,174 @@
-<script is:inline define:vars={{ searchItems }}>
-    // Мы будем использовать объект window для хранения глобальных функций и переменных,
-    // чтобы избежать конфликтов при повторном выполнении скрипта через ViewTransitions.
+---
+import { sanityClient, urlFor } from '../lib/sanity';
+import MainLayout from '../layouts/MainLayout.astro'; 
 
-    // Функция для инициализации логики поиска
-    function initializeSearch() {
+// ЗАПРАШИВАЕМ ПОЛЕ excerpt
+const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**"))] | order(publishedAt desc){
+  title,
+  slug,
+  excerpt,
+  publishedAt,
+  "authorName": author->name,
+  "authorImage": author->image,
+  "categoryTitles": categories[]->title,
+  mainImage
+}`);
+
+const heroPost = posts[0];
+const otherPosts = posts.slice(1);
+
+const searchItems = posts.map(post => ({
+  title: post.title || '',
+  author: post.authorName || '',
+  authorAvatar: post.authorImage ? urlFor(post.authorImage).width(40).height(40).url() : null,
+  categories: post.categoryTitles ? post.categoryTitles.join(' ') : '',
+  slug: post.slug?.current || '#'
+}));
+---
+
+<MainLayout title="Главная">
+    <main class="content">
+        
+        <!-- ПОИСК -->
+        <div class="search-wrapper">
+            <svg class="search-icon" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="Найти оперу, автора или рубрику..." autocomplete="off">
+            <ul id="searchResults" class="search-results-dropdown"></ul>
+        </div>
+
+        <!-- ГЛАВНАЯ КАРТОЧКА -->
+        {heroPost && (
+            <div class="hero-post">
+                <div class="hero-content">
+                    {heroPost.categoryTitles && heroPost.categoryTitles.length > 0 && (
+                        <div class="tag">{heroPost.categoryTitles[0]}</div>
+                    )}
+                    <h2 class="hero-title">
+                        <a href={`/blog/${heroPost.slug?.current || '#'}`}>{heroPost.title}</a>
+                    </h2>
+                    
+                    <!-- ВЫВОДИМ НАСТОЯЩЕЕ ОПИСАНИЕ ИЗ SANITY -->
+                    <p class="hero-excerpt">
+                        {heroPost.excerpt || 'Нажмите "Читать статью", чтобы узнать подробности и погрузиться в историю этого произведения.'}
+                    </p>
+                    
+                    <a href={`/blog/${heroPost.slug?.current || '#'}`} class="btn-primary">Читать статью</a>
+                </div>
+                {heroPost.mainImage && (
+                    <div class="hero-image">
+                        <img src={urlFor(heroPost.mainImage).url()} alt={heroPost.title} />
+                    </div>
+                )}
+            </div>
+        )}
+
+        <!-- СЕТКА СТАТЕЙ -->
+        <div class="section-header">
+            <h2>Свежие материалы</h2>
+        </div>
+
+        <div class="articles-grid">
+            {otherPosts.map((post) => (
+                <article class="article-card">
+                    {post.mainImage && (
+                        <a href={`/blog/${post.slug?.current || '#'}`}>
+                            <div class="article-image">
+                                <img src={urlFor(post.mainImage).url()} alt={post.title} />
+                            </div>
+                        </a>
+                    )}
+                    <div class="article-body">
+                        <h3 class="article-title"><a href={`/blog/${post.slug?.current || '#'}`}>{post.title}</a></h3>
+                        <div class="article-footer">
+                            <div class="meta-flex">
+                                {post.authorImage ? (
+                                    <div class="author-avatar" style={`background-image: url('${urlFor(post.authorImage).width(50).height(50).url()}');`}></div>
+                                ) : (
+                                    <div class="author-avatar"></div>
+                                )}
+                                {post.authorName || 'Неизвестный'}
+                            </div>
+                            <span>{new Date(post.publishedAt).toLocaleDateString('ru-RU')}</span>
+                        </div>
+                    </div>
+                </article>
+            ))}
+        </div>
+    </main>
+</MainLayout>
+
+<style>
+    .content { padding: 40px 60px; }
+    .search-wrapper { position: relative; margin-bottom: 50px; max-width: 600px; z-index: 100; }
+    .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #999; pointer-events: none; transition: 0.3s; }
+    .search-input { width: 100%; padding: 18px 24px 18px 55px; border: 2px solid transparent; border-radius: 50px; background: var(--bg-card); box-shadow: var(--shadow); font-family: var(--font-body); font-size: 1.05rem; color: var(--text-main); outline: none; transition: all 0.3s ease; }
+    .search-input::placeholder { color: #aaa; }
+    .search-input:focus { border-color: var(--accent-primary); box-shadow: 0 10px 30px rgba(128, 37, 37, 0.1); }
+    .search-input:focus + .search-icon { color: var(--accent-primary); }
+    .search-results-dropdown { position: absolute; top: calc(100% + 10px); left: 0; right: 0; background: var(--bg-card); border-radius: var(--radius-sm); box-shadow: 0 15px 40px rgba(0,0,0,0.12); max-height: 350px; overflow-y: auto; display: none; padding: 8px 0; margin: 0; list-style: none; border: 1px solid rgba(0,0,0,0.05); }
+    
+    .hero-post { background: var(--bg-card); border-radius: var(--radius-lg); padding: 50px; margin-bottom: 60px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; gap: 40px; }
+    .hero-content { flex: 1; max-width: 500px; }
+    .hero-title { font-family: var(--font-head); font-size: 2.8rem; line-height: 1.2; margin-bottom: 20px; }
+    .hero-title a { color: var(--text-main); transition: color 0.2s; }
+    .hero-title a:hover { color: var(--accent-primary); }
+    .hero-excerpt { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px; line-height: 1.6; }
+    .btn-primary { display: inline-block; background: var(--accent-primary); color: #FFF; padding: 14px 30px; border-radius: 50px; font-weight: 500; font-size: 0.95rem; transition: 0.3s; }
+    .btn-primary:hover { background: #6b1e1e; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(128, 37, 37, 0.2); color: #FFF; }
+    .hero-image { flex: 1; max-width: 50%; border-radius: var(--radius-sm); overflow: hidden; box-shadow: var(--shadow); }
+    .hero-image img { width: 100%; height: auto; display: block; }
+    
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 15px; }
+    .section-header h2 { font-family: var(--font-head); font-size: 1.8rem; }
+    .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
+    .article-card { background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; display: flex; flex-direction: column; }
+    .article-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+    .article-image { height: 220px; overflow: hidden; }
+    .article-image img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+    .article-card:hover .article-image img { transform: scale(1.05); }
+    .article-body { padding: 30px; display: flex; flex-direction: column; flex-grow: 1; }
+    .article-title { font-family: var(--font-head); font-size: 1.4rem; margin-bottom: 15px; line-height: 1.3; }
+    .article-title a { color: var(--text-main); transition: 0.2s; }
+    .article-title a:hover { color: var(--accent-primary); }
+    .article-footer { margin-top: auto; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); }
+    .meta-flex { display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--text-main); }
+    .author-avatar { width: 30px; height: 30px; border-radius: 50%; background-color: #eee; background-size: cover; background-position: center; }
+</style>
+
+<script is:inline define:vars={{ searchItems }}>
+    // Функция запуска поиска
+    function initSearch() {
         const input = document.getElementById('searchInput');
         const resultsBox = document.getElementById('searchResults');
 
-        // Если элементов нет (например, на страницах, где нет поиска), просто выходим
-        if (!input || !resultsBox) {
-            // Если есть старые слушатели, которые мы добавляли, их нужно удалить,
-            // чтобы не было утечек памяти или дублирования.
-            // Для простоты, если поиска нет, мы просто убедимся, что старые слушатели не активны.
-            // Если раньше был поиск, а теперь нет, его слушатели просто не найдут элементы.
-            return; 
-        }
+        if (!input || !resultsBox) return;
 
-        // ---------- УДАЛЯЕМ ЛОГИКУ КЛОНИРОВАНИЯ И ЗАМЕНЫ ЭЛЕМЕНТА! ----------
-        // ViewTransitions уже позаботится об этом. Нам нужно только переинициализировать слушатели.
+        // Очищаем старый слушатель (если был), чтобы не дублировался
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
 
-        // Удаляем старые слушатели событий, чтобы не было дублирования
-        // Важно: чтобы удалить слушатель, нужно передать ту же самую функцию, что и добавляли.
-        // Поэтому мы будем использовать именованную функцию или сохранять ссылки на них.
-        // Простейший способ: если есть старый слушатель, удаляем его.
-        // Для этого нам нужно хранить ссылку на предыдущую функцию-обработчик.
-        
-        // --- Переменная для хранения ссылки на обработчик input ---
-        // (Она должна быть доступна глобально или в замыкании, чтобы мы могли ее удалить)
-        if (window.currentSearchInputHandler) {
-            input.removeEventListener('input', window.currentSearchInputHandler);
-        }
-
-        // --- Новый обработчик input ---
-        const newSearchInputHandler = (e) => {
+        newInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
+            
             if (!query) { 
                 resultsBox.style.display = 'none'; 
                 return; 
             }
 
             const filteredPosts = searchItems.filter(item => {
-                const titleStr = item.title.toLowerCase();
-                const authorStr = item.author.toLowerCase();
-                const catStr = item.categories.toLowerCase();
+                const titleStr = (item.title || '').toLowerCase();
+                const authorStr = (item.author || '').toLowerCase();
+                const catStr = (item.categories || '').toLowerCase();
 
                 if (query.length <= 2) {
+                    // Поиск по началу слов
                     const checkWords = (str) => str.split(/[\s\-«»",.]+/).some(word => word.startsWith(query));
                     return checkWords(titleStr) || checkWords(authorStr) || checkWords(catStr);
                 } else {
+                    // Поиск вхождения
                     return titleStr.includes(query) || authorStr.includes(query) || catStr.includes(query);
                 }
             });
@@ -68,35 +189,16 @@
                 resultsBox.innerHTML = '<li style="padding: 15px 24px; color: #999; font-style: italic;">Ничего не найдено 😔</li>';
             }
             resultsBox.style.display = 'block';
-        };
+        });
 
-        input.addEventListener('input', newSearchInputHandler);
-        window.currentSearchInputHandler = newSearchInputHandler; // Сохраняем ссылку для следующего удаления
-
-        // Вешаем закрытие по клику вне поиска (один раз)
-        // Этот слушатель можно оставить, как есть, если он не конфликтует.
-        // Либо перенести внутрь initializeSearch и удалять/добавлять его.
-        // Твоя текущая логика с `window.searchClickListenerAdded` уже неплоха.
-        if (!window.searchClickListenerAdded) {
-            document.addEventListener('click', (e) => {
-                const box = document.getElementById('searchResults');
-                if (box && !e.target.closest('.search-wrapper')) { box.style.display = 'none'; }
-            });
-            window.searchClickListenerAdded = true;
-        }
+        // Закрытие по клику вне
+        document.addEventListener('click', (e) => {
+            if (resultsBox && !e.target.closest('.search-wrapper')) { 
+                resultsBox.style.display = 'none'; 
+            }
+        }, { once: true }); // once: true удалит слушатель после клика, чтобы не копились
     }
 
-    // Вызываем инициализацию при первой загрузке и при каждом переходе ViewTransitions
-    document.addEventListener('astro:page-load', initializeSearch);
-
-    // Дополнительно: при первой загрузке страницы, чтобы не ждать astro:page-load,
-    // если это первая страница.
-    document.addEventListener('DOMContentLoaded', () => {
-        // Проверяем, что initializeSearch не вызвана ViewTransitions,
-        // чтобы избежать двойного вызова на первой загрузке.
-        // Но `astro:page-load` уже довольно рано срабатывает.
-        // Можно просто вызвать:
-        // initializeSearch();
-    });
-
+    // Запускаем при загрузке страницы и при переходах
+    document.addEventListener('astro:page-load', initSearch);
 </script>

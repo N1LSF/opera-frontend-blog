@@ -1,116 +1,74 @@
 ---
-import { sanityClient, urlFor } from '../lib/sanity';
+import { sanityClient } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro';
 
-// Запрос только для рубрики "История создания"
-const posts = await sanityClient.fetch(`*[_type == "post" && category == "history"] | order(publishedAt desc){
+const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**")) && "glossary" in categories[]->slug.current] | order(title asc){
   title,
-  slug,
-  publishedAt,
-  "authorName": author->name,
-  mainImage
+  slug
 }`);
+
+const groupedPosts = posts.reduce((acc, post) => {
+  const firstLetter = post.title.charAt(0).toUpperCase();
+  if (!acc[firstLetter]) acc[firstLetter] = [];
+  acc[firstLetter].push(post);
+  return acc;
+}, {});
+
+const letters = Object.keys(groupedPosts).sort();
 ---
 
-<MainLayout title="История создания">
+<MainLayout title="Глоссарий">
     <main class="content">
         <div class="page-header">
-            <h1 class="page-title">История создания</h1>
-            <p style="color: var(--text-muted);">Как рождались великие шедевры: от первой ноты до премьеры.</p>
+            <h1 class="page-title">Глоссарий</h1>
+            <p style="color: var(--text-muted);">Алфавитный указатель оперных терминов и понятий.</p>
         </div>
 
-        {posts.length > 0 && (
-            <div style="position: relative; margin-bottom: 40px; max-width: 100%;">
-                <svg width="20" height="20" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #aaa; pointer-events: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input type="text" id="pageSearch" class="page-search-input" placeholder="Поиск по статьям рубрики..." autocomplete="off">
-            </div>
-        )}
-
-        {posts.length > 0 ? (
-            <div class="articles-grid" id="articlesGrid">
-                {posts.map((post) => (
-                    <article class="article-card">
-                        {post.mainImage && (
-                            <a href={`/blog/${post.slug?.current || '#'}`}>
-                                <div class="article-image">
-                                    <img src={urlFor(post.mainImage).url()} alt={post.title} />
-                                </div>
-                            </a>
-                        )}
-                        <div class="article-body">
-                            <h3 class="article-title"><a href={`/blog/${post.slug?.current || '#'}`}>{post.title}</a></h3>
-                            <div class="article-footer" style="display: flex; justify-content: space-between;">
-                                <span>{post.authorName || 'Редакция'}</span>
-                                <span>{new Date(post.publishedAt).toLocaleDateString('ru-RU')}</span>
-                            </div>
+        {letters.length > 0 ? (
+            <div class="glossary-container">
+                <div class="alphabet-nav">
+                    {letters.map((letter) => (
+                        <a href={`#letter-${letter}`} class="letter-link">{letter}</a>
+                    ))}
+                </div>
+                <div class="terms-list">
+                    {letters.map((letter) => (
+                        <div class="letter-section" id={`letter-${letter}`}>
+                            <h2 class="letter-heading">{letter}</h2>
+                            <ul class="term-items">
+                                {groupedPosts[letter].map((post) => (
+                                    <li>
+                                        <a href={`/blog/${post.slug?.current}`} class="term-link">
+                                            {post.title}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
-                    </article>
-                ))}
-                
-                <div class="no-results" id="noResults" style="display: none; grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted); font-size: 1.2rem;">
-                    По вашему запросу ничего не найдено 😔
+                    ))}
                 </div>
             </div>
         ) : (
             <div class="no-posts-container">
-                <p class="no-posts">В этой рубрике пока нет статей.</p>
-                <p style="font-size: 0.9rem; color: #999; margin-top: 10px;">Зайдите в Sanity и создайте пост с рубрикой "История создания"!</p>
+                <p class="no-posts">Словарь пока пуст.</p>
             </div>
         )}
     </main>
 </MainLayout>
 
 <style>
-    .content { padding: 40px 60px; }
-    .page-header { margin-bottom: 30px; }
+    .content { padding: 40px 60px; max-width: 1000px; }
+    .page-header { margin-bottom: 40px; }
     .page-title { font-family: var(--font-head); font-size: 2.5rem; margin-bottom: 15px; }
-    
-    .page-search-input { width: 100%; padding: 16px 16px 16px 48px; border: 1px solid rgba(0,0,0,0.1); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 1.05rem; color: var(--text-main); outline: none; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
-    .page-search-input:focus { border-color: var(--accent-primary); box-shadow: 0 10px 25px rgba(128, 37, 37, 0.08); }
-
-    .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
-    .article-card { background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; display: flex; flex-direction: column; }
-    .article-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
-    .article-image { height: 220px; overflow: hidden; }
-    .article-image img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-    .article-card:hover .article-image img { transform: scale(1.05); }
-    .article-body { padding: 30px; display: flex; flex-direction: column; flex-grow: 1; }
-    .article-title { font-family: var(--font-head); font-size: 1.4rem; margin-bottom: 15px; line-height: 1.3; }
-    .article-title a { color: var(--text-main); transition: color 0.2s; }
-    .article-title a:hover { color: var(--accent-primary); }
-    .article-footer { margin-top: auto; font-size: 0.85rem; color: var(--text-muted); padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); }
-    
+    .glossary-container { background: var(--bg-card); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+    .alphabet-nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .letter-link { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: var(--bg-body); border-radius: 8px; font-weight: 600; color: var(--accent-primary); transition: 0.2s; }
+    .letter-link:hover { background: var(--accent-primary); color: #fff; transform: translateY(-2px); }
+    .letter-section { margin-bottom: 40px; }
+    .letter-heading { font-family: var(--font-head); font-size: 2rem; color: var(--accent-primary); margin-bottom: 20px; border-bottom: 2px solid var(--accent-light); padding-bottom: 5px; display: inline-block; min-width: 40px; }
+    .term-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+    .term-link { font-size: 1.1rem; color: var(--text-main); transition: 0.2s; display: block; padding: 5px 0; }
+    .term-link:hover { color: var(--accent-primary); padding-left: 5px; }
     .no-posts-container { background: #fff; padding: 40px; border-radius: var(--radius-lg); text-align: center; border: 1px dashed #ccc; }
     .no-posts { font-size: 1.2rem; color: var(--text-muted); font-weight: 500; }
 </style>
-
-<script is:inline>
-    const searchInput = document.getElementById('pageSearch');
-    const cards = document.querySelectorAll('.article-card');
-    const noResultsMsg = document.getElementById('noResults');
-
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            let visibleCount = 0;
-
-            cards.forEach(card => {
-                const title = card.querySelector('.article-title').textContent.toLowerCase();
-                
-                if (title.includes(query)) {
-                    card.style.display = 'flex';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            if (noResultsMsg) {
-                noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
-            }
-        });
-    }
-</script>

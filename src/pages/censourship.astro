@@ -2,8 +2,7 @@
 import { sanityClient, urlFor } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro';
 
-// Запрос только для рубрики "Скандалы и цензура"
-const posts = await sanityClient.fetch(`*[_type == "post" && category == "censourship"] | order(publishedAt desc){
+const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**")) && "history" in categories[]->slug.current] | order(publishedAt desc){
   title,
   slug,
   publishedAt,
@@ -12,16 +11,16 @@ const posts = await sanityClient.fetch(`*[_type == "post" && category == "censou
 }`);
 ---
 
-<MainLayout title="Скандалы и цензура">
+<MainLayout title="История создания">
     <main class="content">
         <div class="page-header">
-            <h1 class="page-title">Скандалы и цензура</h1>
-            <p style="color: var(--text-muted);">Произведения, бросившие вызов обществу, морали и государственной цензуре.</p>
+            <h1 class="page-title">История создания</h1>
+            <p style="color: var(--text-muted);">Как рождались великие шедевры: от первой ноты до премьеры.</p>
         </div>
 
         {posts.length > 0 && (
             <div style="position: relative; margin-bottom: 40px; max-width: 100%;">
-                <svg width="20" height="20" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #aaa; pointer-events: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="20" height="20" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #aaa; pointer-events: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
@@ -34,14 +33,14 @@ const posts = await sanityClient.fetch(`*[_type == "post" && category == "censou
                 {posts.map((post) => (
                     <article class="article-card">
                         {post.mainImage && (
-                            <a href={`/blog/${post.slug?.current || '#'}`}>
+                            <a href={`/blog/${post.slug?.current}`}>
                                 <div class="article-image">
-                                    <img src={urlFor(post.mainImage).url()} alt={post.title} />
+                                    <img src={urlFor(post.mainImage).width(400).height(260).auto('format').url()} alt={post.title} loading="lazy" />
                                 </div>
                             </a>
                         )}
                         <div class="article-body">
-                            <h3 class="article-title"><a href={`/blog/${post.slug?.current || '#'}`}>{post.title}</a></h3>
+                            <h3 class="article-title"><a href={`/blog/${post.slug?.current}`}>{post.title}</a></h3>
                             <div class="article-footer" style="display: flex; justify-content: space-between;">
                                 <span>{post.authorName || 'Редакция'}</span>
                                 <span>{new Date(post.publishedAt).toLocaleDateString('ru-RU')}</span>
@@ -49,15 +48,13 @@ const posts = await sanityClient.fetch(`*[_type == "post" && category == "censou
                         </div>
                     </article>
                 ))}
-                
-                <div class="no-results" id="noResults" style="display: none; grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted); font-size: 1.2rem;">
+                <div id="noResults" style="display: none; grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted); font-size: 1.2rem;">
                     По вашему запросу ничего не найдено 😔
                 </div>
             </div>
         ) : (
             <div class="no-posts-container">
                 <p class="no-posts">В этой рубрике пока нет статей.</p>
-                <p style="font-size: 0.9rem; color: #999; margin-top: 10px;">Зайдите в Sanity и создайте пост с рубрикой "Скандалы и цензура"!</p>
             </div>
         )}
     </main>
@@ -67,10 +64,8 @@ const posts = await sanityClient.fetch(`*[_type == "post" && category == "censou
     .content { padding: 40px 60px; }
     .page-header { margin-bottom: 30px; }
     .page-title { font-family: var(--font-head); font-size: 2.5rem; margin-bottom: 15px; }
-    
-    .page-search-input { width: 100%; padding: 16px 16px 16px 48px; border: 1px solid rgba(0,0,0,0.1); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 1.05rem; color: var(--text-main); outline: none; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
-    .page-search-input:focus { border-color: var(--accent-primary); box-shadow: 0 10px 25px rgba(128, 37, 37, 0.08); }
-
+    .page-search-input { width: 100%; padding: 16px 16px 16px 48px; border: 1px solid rgba(0,0,0,0.1); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 1.05rem; color: var(--text-main); outline: none; transition: all 0.3s ease; }
+    .page-search-input:focus { border-color: var(--accent-primary); }
     .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
     .article-card { background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; display: flex; flex-direction: column; }
     .article-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
@@ -82,7 +77,6 @@ const posts = await sanityClient.fetch(`*[_type == "post" && category == "censou
     .article-title a { color: var(--text-main); transition: color 0.2s; }
     .article-title a:hover { color: var(--accent-primary); }
     .article-footer { margin-top: auto; font-size: 0.85rem; color: var(--text-muted); padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); }
-    
     .no-posts-container { background: #fff; padding: 40px; border-radius: var(--radius-lg); text-align: center; border: 1px dashed #ccc; }
     .no-posts { font-size: 1.2rem; color: var(--text-muted); font-weight: 500; }
 </style>
@@ -91,26 +85,16 @@ const posts = await sanityClient.fetch(`*[_type == "post" && category == "censou
     const searchInput = document.getElementById('pageSearch');
     const cards = document.querySelectorAll('.article-card');
     const noResultsMsg = document.getElementById('noResults');
-
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
             let visibleCount = 0;
-
             cards.forEach(card => {
                 const title = card.querySelector('.article-title').textContent.toLowerCase();
-                
-                if (title.includes(query)) {
-                    card.style.display = 'flex';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
+                if (title.includes(query)) { card.style.display = 'flex'; visibleCount++; } 
+                else { card.style.display = 'none'; }
             });
-
-            if (noResultsMsg) {
-                noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
-            }
+            if (noResultsMsg) noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
         });
     }
 </script>

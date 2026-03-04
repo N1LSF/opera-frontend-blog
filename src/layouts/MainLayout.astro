@@ -15,6 +15,7 @@ const currentPath = Astro.url.pathname;
     <ViewTransitions />
     
     <style is:global>
+        /* Отключаем стандартные мигания Astro */
         ::view-transition-old(root),
         ::view-transition-new(root) { animation: none !important; opacity: 1 !important; }
 
@@ -34,7 +35,7 @@ const currentPath = Astro.url.pathname;
         
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ul, ol, li { list-style: none !important; padding: 0; margin: 0; } 
-        body { background-color: var(--bg-body); color: var(--text-main); font-family: var(--font-body); line-height: 1.6; min-height: 100vh; }
+        body { background-color: var(--bg-body); color: var(--text-main); font-family: var(--font-body); line-height: 1.6; min-height: 100vh; overflow-x: hidden; }
         a { text-decoration: none; color: inherit; transition: 0.3s; }
 
         .app-container { 
@@ -75,11 +76,7 @@ const currentPath = Astro.url.pathname;
             display: block; 
         }
         
-        .slogan { 
-            font-size: 0.8rem; 
-            color: var(--text-muted); 
-            line-height: 1.4; 
-        }
+        .slogan { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
 
         .sidebar-nav-card {
             background: var(--bg-card);
@@ -99,8 +96,6 @@ const currentPath = Astro.url.pathname;
             font-weight: 700; 
         }
 
-        .sidebar-nav-card ul { margin-bottom: 25px; }
-
         .nav-link { 
             display: flex; 
             align-items: center; 
@@ -113,20 +108,10 @@ const currentPath = Astro.url.pathname;
             transition: all 0.2s ease;
         }
         
-        .nav-link:hover { 
-            background-color: rgba(0,0,0,0.03); 
-            transform: translateX(4px);
-        }
+        .nav-link:hover { background-color: rgba(0,0,0,0.03); transform: translateX(4px); }
+        .nav-link.active { background-color: var(--accent-light); color: var(--accent-primary); }
 
-        .nav-link.active { 
-            background-color: var(--accent-light); 
-            color: var(--accent-primary); 
-        }
-
-        main {
-            background: transparent;
-            padding-top: 24px;
-        }
+        main { background: transparent; padding-top: 24px; }
 
         @media (max-width: 1000px) {
             .app-container { grid-template-columns: 1fr; gap: 0; }
@@ -134,19 +119,40 @@ const currentPath = Astro.url.pathname;
             main { padding: 20px; }
         }
 
+        /* ШТОРКА */
         .page-curtain {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: var(--accent-primary); z-index: 999999;
-            display: flex; align-items: center; justify-content: center;
-            transform: translateY(100%); pointer-events: none; will-change: transform; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh;
+            background-color: var(--accent-primary); 
+            z-index: 999999;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            /* Изначально она всегда внизу */
+            transform: translateY(100%); 
+            pointer-events: none;
+            will-change: transform;
         }
-        .curtain-text { font-family: var(--font-head); font-size: 3rem; font-weight: 700; color: #FFFFFF; text-align: center; }
+
+        .curtain-text { 
+            font-family: var(--font-head); 
+            font-size: 3rem; 
+            font-weight: 700; 
+            color: #FFFFFF; 
+            text-align: center; 
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .page-curtain.visible .curtain-text { opacity: 1; }
     </style>
 </head>
 <body>
 
-<!-- ВОТ ОН — div шторки который ты удалил! -->
-<div id="transition-curtain" class="page-curtain">
+<div id="transition-curtain" class="page-curtain" transition:persist>
     <div class="curtain-text">ЧИТАЯ ОПЕРУ</div>
 </div>
 
@@ -161,16 +167,16 @@ const currentPath = Astro.url.pathname;
             <div class="nav-group-title">Навигация</div>
             <ul>
                 <li><a href="/" class={`nav-link ${currentPath === '/' ? 'active' : ''}`}>Главная</a></li>
-                <li><a href="/about" class={`nav-link ${currentPath.startsWith('/about') ? 'active' : ''}`}>О блоге</a></li>
+                <li><a href="/about/" class={`nav-link ${currentPath.startsWith('/about') ? 'active' : ''}`}>О блоге</a></li>
             </ul>
             
             <div class="nav-group-title">Рубрики</div>
             <ul>
-                <li><a href="/librettists" class={`nav-link ${currentPath.startsWith('/librettists') ? 'active' : ''}`}>Либреттисты</a></li>
-                <li><a href="/opera-plots" class={`nav-link ${currentPath.startsWith('/opera-plots') ? 'active' : ''}`}>Оперные сюжеты</a></li>
-                <li><a href="/history" class={`nav-link ${currentPath.startsWith('/history') ? 'active' : ''}`}>История</a></li>
-                <li><a href="/censourship" class={`nav-link ${currentPath.startsWith('/censourship') ? 'active' : ''}`}>Цензура</a></li>
-                <li><a href="/glossary" class={`nav-link ${currentPath.startsWith('/glossary') ? 'active' : ''}`}>Глоссарий</a></li>
+                <li><a href="/librettists/" class={`nav-link ${currentPath.startsWith('/librettists') ? 'active' : ''}`}>Либреттисты</a></li>
+                <li><a href="/opera-plots/" class={`nav-link ${currentPath.startsWith('/opera-plots') ? 'active' : ''}`}>Оперные сюжеты</a></li>
+                <li><a href="/history/" class={`nav-link ${currentPath.startsWith('/history') ? 'active' : ''}`}>История</a></li>
+                <li><a href="/censourship/" class={`nav-link ${currentPath.startsWith('/censourship') ? 'active' : ''}`}>Цензура</a></li>
+                <li><a href="/glossary/" class={`nav-link ${currentPath.startsWith('/glossary') ? 'active' : ''}`}>Глоссарий</a></li>
             </ul>
         </nav>
     </aside>
@@ -179,28 +185,70 @@ const currentPath = Astro.url.pathname;
         <slot /> 
     </main>
 </div>
+
 <script is:inline>
-    document.addEventListener('astro:before-preparation', () => {
+    // Настройки симметрии
+    const ANIM_SPEED = 600; // Скорость в мс
+    const EASING = 'cubic-bezier(0.45, 0, 0.55, 1)'; // Плавный симметричный вход-выход
+
+    // Функция сброса шторки вниз без анимации
+    function resetCurtain() {
         const curtain = document.getElementById('transition-curtain');
         if (curtain) {
             curtain.style.transition = 'none';
-            curtain.style.transform = 'translateY(0%)';
+            curtain.style.transform = 'translateY(100%)';
+            curtain.classList.remove('visible');
         }
+    }
+
+    // ЭТАП 1: Клик по ссылке -> Шторка едет ВВЕРХ в центр
+    document.addEventListener('astro:before-preparation', (ev) => {
+        const curtain = document.getElementById('transition-curtain');
+        if (!curtain) return;
+
+        // Отменяем мгновенный переход Astro, чтобы шторка успела закрыться
+        const originalLoader = ev.loader;
+        ev.loader = async () => {
+            // Ставим вниз
+            curtain.style.transition = 'none';
+            curtain.style.transform = 'translateY(100%)';
+            
+            // Маленький хак для инициализации позиции
+            await new Promise(r => requestAnimationFrame(r));
+            
+            // Запускаем анимацию в центр
+            curtain.style.transition = `transform ${ANIM_SPEED}ms ${EASING}`;
+            curtain.style.transform = 'translateY(0%)';
+            curtain.classList.add('visible');
+
+            // Ждем завершения анимации
+            await new Promise(r => setTimeout(r, ANIM_SPEED));
+            
+            // Теперь Astro может менять контент
+            await originalLoader();
+        };
     });
 
+    // ЭТАП 2: Контент под шторкой сменился -> Уводим её НАВЕРХ
     document.addEventListener('astro:after-swap', () => {
         const curtain = document.getElementById('transition-curtain');
-        if (curtain) {
+        if (!curtain) return;
+
+        // Небольшая пауза в центре (дла солидности)
+        setTimeout(() => {
+            curtain.style.transition = `transform ${ANIM_SPEED}ms ${EASING}`;
+            curtain.style.transform = 'translateY(-100%)';
+
+            // Когда она полностью ушла вверх
             setTimeout(() => {
-                curtain.style.transition = 'transform 0.6s ease-in-out';
-                curtain.style.transform = 'translateY(-100%)';
-            }, 200);
-            setTimeout(() => {
-                curtain.style.transition = 'none';
-                curtain.style.transform = 'translateY(100%)';
-            }, 900);
-        }
+                resetCurtain();
+            }, ANIM_SPEED);
+        }, 100);
     });
+
+    // При первой загрузке страницы шторка должна быть внизу
+    resetCurtain();
 </script>
+
 </body>
 </html>

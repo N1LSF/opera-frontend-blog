@@ -145,6 +145,11 @@ const currentPath = Astro.url.pathname;
 </head>
 <body>
 
+<!-- ВОТ ОН — div шторки который ты удалил! -->
+<div id="transition-curtain" class="page-curtain">
+    <div class="curtain-text">ЧИТАЯ ОПЕРУ</div>
+</div>
+
 <div class="app-container">
     <aside class="sidebar">
         <div class="sidebar-brand-card">
@@ -174,8 +179,8 @@ const currentPath = Astro.url.pathname;
         <slot /> 
     </main>
 </div>
+
 <script is:inline>
-    // Сразу прячем шторку за нижним краем при загрузке
     function resetCurtain() {
         const curtain = document.getElementById('transition-curtain');
         if (curtain) {
@@ -184,7 +189,6 @@ const currentPath = Astro.url.pathname;
         }
     }
 
-    // Показываем шторку — мгновенно перекрываем экран
     document.addEventListener('astro:before-preparation', () => {
         const curtain = document.getElementById('transition-curtain');
         if (curtain) {
@@ -193,7 +197,6 @@ const currentPath = Astro.url.pathname;
         }
     });
 
-    // После свапа — уводим шторку вверх
     document.addEventListener('astro:after-swap', () => {
         const curtain = document.getElementById('transition-curtain');
         if (curtain) {
@@ -207,8 +210,8 @@ const currentPath = Astro.url.pathname;
         }
     });
 
-    // При первой загрузке тоже прячем
     resetCurtain();
 </script>
+
 </body>
 </html>

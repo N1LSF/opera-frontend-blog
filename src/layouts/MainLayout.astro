@@ -1,5 +1,6 @@
 ---
-// УБРАЛИ ИМПОРТ ViewTransitions
+import { ViewTransitions } from 'astro:transitions';
+
 const { title } = Astro.props;
 const currentPath = Astro.url.pathname;
 ---
@@ -12,7 +13,7 @@ const currentPath = Astro.url.pathname;
     <title>{title} | Читая Оперу</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
-    <!-- ViewTransitions УДАЛЕН -->
+    <ViewTransitions fallback="swap" />
     
     <style is:global>
         :root {
@@ -115,11 +116,22 @@ const currentPath = Astro.url.pathname;
             .sidebar { display: none; }
             main { padding: 20px; }
         }
+
+        /* Упрощенная шторка */
+        .page-curtain {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--accent-primary); z-index: 999999;
+            display: flex; align-items: center; justify-content: center;
+            transform: translateY(100%); pointer-events: none;
+        }
+        .curtain-text { font-family: var(--font-head); font-size: 3rem; font-weight: 700; color: #FFFFFF; }
     </style>
 </head>
 <body>
 
-<!-- ШТОРКУ УДАЛИЛИ -->
+<div id="transition-curtain" class="page-curtain" transition:persist>
+    <div class="curtain-text">ЧИТАЯ ОПЕРУ</div>
+</div>
 
 <div class="app-container">
     <aside class="sidebar">
@@ -151,7 +163,26 @@ const currentPath = Astro.url.pathname;
     </main>
 </div>
 
-<!-- СКРИПТ УДАЛЕН -->
+<script is:inline>
+    document.addEventListener('astro:before-preparation', () => {
+        const curtain = document.getElementById('transition-curtain');
+        if (curtain) {
+            curtain.style.transition = 'transform 0.4s ease-in-out';
+            curtain.style.transform = 'translateY(0)';
+        }
+    });
+
+    document.addEventListener('astro:after-swap', () => {
+        const curtain = document.getElementById('transition-curtain');
+        if (curtain) {
+            curtain.style.transform = 'translateY(-100%)';
+            setTimeout(() => {
+                curtain.style.transition = 'none';
+                curtain.style.transform = 'translateY(100%)';
+            }, 400);
+        }
+    });
+</script>
 
 </body>
 </html>

@@ -60,13 +60,6 @@ const searchItems = posts.map(post => ({
                     
                     <!-- ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ -->
                     <a href={`/blog/${heroPost.slug?.current || '#'}/`} class="btn-primary">Читать статью</a>
-                </div>
-                {heroPost.mainImage && (
-                    <div class="hero-image">
-                        <img src={urlFor(heroPost.mainImage).url()} alt={heroPost.title} />
-                    </div>
-                )}
-            </div>
         )}
 
         <!-- СЕТКА СТАТЕЙ -->
@@ -77,14 +70,6 @@ const searchItems = posts.map(post => ({
         <div class="articles-grid">
             {otherPosts.map((post) => (
                 <article class="article-card">
-                    {post.mainImage && (
-                        /* ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ */
-                        <a href={`/blog/${post.slug?.current || '#'}/`}>
-                            <div class="article-image">
-                                <img src={urlFor(post.mainImage).url()} alt={post.title} />
-                            </div>
-                        </a>
-                    )}
                     <div class="article-body">
                         <h3 class="article-title">
                             /* ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ */

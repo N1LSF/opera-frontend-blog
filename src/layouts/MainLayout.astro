@@ -179,16 +179,7 @@ const currentPath = Astro.url.pathname;
         <slot /> 
     </main>
 </div>
-
 <script is:inline>
-    function resetCurtain() {
-        const curtain = document.getElementById('transition-curtain');
-        if (curtain) {
-            curtain.style.transition = 'none';
-            curtain.style.transform = 'translateY(100%)';
-        }
-    }
-
     document.addEventListener('astro:before-preparation', () => {
         const curtain = document.getElementById('transition-curtain');
         if (curtain) {
@@ -203,15 +194,13 @@ const currentPath = Astro.url.pathname;
             setTimeout(() => {
                 curtain.style.transition = 'transform 0.6s ease-in-out';
                 curtain.style.transform = 'translateY(-100%)';
-            }, 50);
+            }, 200);
             setTimeout(() => {
-                resetCurtain();
-            }, 700);
+                curtain.style.transition = 'none';
+                curtain.style.transform = 'translateY(100%)';
+            }, 900);
         }
     });
-
-    resetCurtain();
 </script>
-
 </body>
 </html>

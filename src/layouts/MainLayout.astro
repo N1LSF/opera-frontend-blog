@@ -172,17 +172,19 @@ const currentPath = Astro.url.pathname;
         <nav class="sidebar-nav-card">
             <div class="nav-group-title">Навигация</div>
             <ul>
+                <!-- ДОБАВЛЕНЫ СЛЕШИ В КОНЦЕ ССЫЛОК -->
                 <li><a href="/" class={`nav-link ${currentPath === '/' ? 'active' : ''}`}>Главная</a></li>
-                <li><a href="/about" class={`nav-link ${currentPath.startsWith('/about') ? 'active' : ''}`}>О блоге</a></li>
+                <li><a href="/about/" class={`nav-link ${currentPath.startsWith('/about') ? 'active' : ''}`}>О блоге</a></li>
             </ul>
             
             <div class="nav-group-title">Рубрики</div>
             <ul>
-                <li><a href="/librettists" class={`nav-link ${currentPath.startsWith('/librettists') ? 'active' : ''}`}>Либреттисты</a></li>
-                <li><a href="/opera-plots" class={`nav-link ${currentPath.startsWith('/opera-plots') ? 'active' : ''}`}>Оперные сюжеты</a></li>
-                <li><a href="/history" class={`nav-link ${currentPath.startsWith('/history') ? 'active' : ''}`}>История</a></li>
-                <li><a href="/censourship" class={`nav-link ${currentPath.startsWith('/censourship') ? 'active' : ''}`}>Цензура</a></li>
-                <li><a href="/glossary" class={`nav-link ${currentPath.startsWith('/glossary') ? 'active' : ''}`}>Глоссарий</a></li>
+                <!-- ДОБАВЛЕНЫ СЛЕШИ В КОНЦЕ ССЫЛОК -->
+                <li><a href="/librettists/" class={`nav-link ${currentPath.startsWith('/librettists') ? 'active' : ''}`}>Либреттисты</a></li>
+                <li><a href="/opera-plots/" class={`nav-link ${currentPath.startsWith('/opera-plots') ? 'active' : ''}`}>Оперные сюжеты</a></li>
+                <li><a href="/history/" class={`nav-link ${currentPath.startsWith('/history') ? 'active' : ''}`}>История</a></li>
+                <li><a href="/censourship/" class={`nav-link ${currentPath.startsWith('/censourship') ? 'active' : ''}`}>Цензура</a></li>
+                <li><a href="/glossary/" class={`nav-link ${currentPath.startsWith('/glossary') ? 'active' : ''}`}>Глоссарий</a></li>
             </ul>
         </nav>
     </aside>
@@ -194,24 +196,25 @@ const currentPath = Astro.url.pathname;
 </div>
 
 <script is:inline>
-    document.addEventListener('astro:before-preparation', event => {
+    // Упрощенная логика шторки без вмешательства в загрузчик
+    document.addEventListener('astro:before-preparation', () => {
         const curtain = document.getElementById('transition-curtain');
-        const originalLoader = event.loader;
-        event.loader = async function() {
-            curtain.style.transition = 'transform 0.6s cubic-bezier(0.65, 0, 0.35, 1)';
+        if (curtain) {
+            curtain.style.transition = 'transform 0.5s ease-in-out';
             curtain.style.transform = 'translateY(0)';
-            await new Promise(resolve => setTimeout(resolve, 600));
-            await originalLoader();
-        };
+        }
     });
 
     document.addEventListener('astro:after-swap', () => {
         const curtain = document.getElementById('transition-curtain');
-        requestAnimationFrame(() => {
-            curtain.style.transition = 'transform 0.6s cubic-bezier(0.65, 0, 0.35, 1)';
+        if (curtain) {
+            // Уводим шторку вверх
             curtain.style.transform = 'translateY(-100%)';
-            setTimeout(() => { curtain.style.transition = 'none'; curtain.style.transform = 'translateY(100%)'; }, 650);
-        });
+            setTimeout(() => {
+                curtain.style.transition = 'none';
+                curtain.style.transform = 'translateY(100%)';
+            }, 500);
+        }
     });
 </script>
 

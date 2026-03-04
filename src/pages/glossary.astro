@@ -1,0 +1,89 @@
+---
+import { sanityClient } from '../lib/sanity';
+import MainLayout from '../layouts/MainLayout.astro';
+
+// Получаем статьи из рубрики Глоссарий, сразу сортируем по алфавиту (title asc)
+const posts = await sanityClient.fetch(`*[_type == "post" && category == "glossary"] | order(title asc){
+  title,
+  slug
+}`);
+
+// МАГИЯ: Группируем по первой букве!
+const groupedPosts = posts.reduce((acc, post) => {
+  const firstLetter = post.title.charAt(0).toUpperCase();
+  if (!acc[firstLetter]) {
+    acc[firstLetter] = [];
+  }
+  acc[firstLetter].push(post);
+  return acc;
+}, {});
+
+// Получаем массив букв, которые есть в базе (А, Б, В...)
+const letters = Object.keys(groupedPosts).sort();
+---
+
+<MainLayout title="Глоссарий">
+    <main class="content">
+        <div class="page-header">
+            <h1 class="page-title">Глоссарий</h1>
+            <p style="color: var(--text-muted);">Алфавитный указатель оперных терминов и понятий.</p>
+        </div>
+
+        {letters.length > 0 ? (
+            <div class="glossary-container">
+                <!-- Навигация по буквам -->
+                <div class="alphabet-nav">
+                    {letters.map((letter) => (
+                        <a href={`#letter-${letter}`} class="letter-link">{letter}</a>
+                    ))}
+                </div>
+
+                <!-- Сами термины, разбитые по буквам -->
+                <div class="terms-list">
+                    {letters.map((letter) => (
+                        <div class="letter-section" id={`letter-${letter}`}>
+                            <h2 class="letter-heading">{letter}</h2>
+                            <ul class="term-items">
+                                {groupedPosts[letter].map((post) => (
+                                    <li>
+                                        <a href={`/blog/${post.slug?.current || '#'}`} class="term-link">
+                                            {post.title}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        ) : (
+            <div class="no-posts-container">
+                <p class="no-posts">Словарь пока пуст.</p>
+            </div>
+        )}
+    </main>
+</MainLayout>
+
+<style>
+    .content { padding: 40px 60px; max-width: 1000px; }
+    .page-header { margin-bottom: 40px; }
+    .page-title { font-family: var(--font-head); font-size: 2.5rem; margin-bottom: 15px; }
+    
+    .glossary-container { background: var(--bg-card); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+    
+    /* Панель с буквами (А Б В Г...) */
+    .alphabet-nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .letter-link { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: var(--bg-body); border-radius: 8px; font-weight: 600; color: var(--accent-primary); transition: 0.2s; }
+    .letter-link:hover { background: var(--accent-primary); color: #fff; transform: translateY(-2px); }
+
+    /* Секция одной буквы */
+    .letter-section { margin-bottom: 40px; }
+    .letter-heading { font-family: var(--font-head); font-size: 2rem; color: var(--accent-gold); margin-bottom: 20px; border-bottom: 2px solid var(--accent-light); padding-bottom: 5px; display: inline-block; min-width: 40px; }
+    
+    .term-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+    .term-link { font-size: 1.1rem; color: var(--text-main); transition: 0.2s; display: block; padding: 5px 0; }
+    .term-link:hover { color: var(--accent-primary); padding-left: 5px; }
+
+    .no-posts-container { background: #fff; padding: 40px; border-radius: var(--radius-lg); text-align: center; border: 1px dashed #ccc; }
+    .no-posts { font-size: 1.2rem; color: var(--text-muted); font-weight: 500; }
+</style>

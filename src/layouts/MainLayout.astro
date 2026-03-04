@@ -1,0 +1,219 @@
+---
+// src/layouts/MainLayout.astro
+import { ViewTransitions } from 'astro:transitions';
+
+const { title } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title} | Читая Оперу</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <ViewTransitions />
+    
+    <style is:global>
+        ::view-transition-old(root),
+        ::view-transition-new(root) { animation: none !important; opacity: 1 !important; }
+
+        :root {
+            --bg-body: #F7F7F9; /* Легкий чистый фон страницы */
+            --bg-card: #FFFFFF; 
+            --text-main: #1D1D1F; 
+            --text-muted: #6E6E73;
+            --accent-primary: #802525; 
+            --accent-light: #FDF2F2; 
+            --radius-lg: 24px; 
+            --radius-sm: 12px;
+            --shadow-soft: 0 4px 20px rgba(0,0,0,0.03); 
+            --font-head: 'Merriweather', serif; 
+            --font-body: 'Inter', sans-serif;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        /* Жесткое отключение точек для списков */
+        ul, ol, li { list-style: none !important; padding: 0; margin: 0; } 
+        
+        body { background-color: var(--bg-body); color: var(--text-main); font-family: var(--font-body); line-height: 1.6; min-height: 100vh; }
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+
+        /* === СЕТКА === */
+        .app-container { 
+            display: grid; 
+            grid-template-columns: 280px 1fr; /* Узкий сайдбар, широкие статьи */
+            max-width: 1440px; 
+            margin: 0 auto; 
+            min-height: 100vh;
+            gap: 40px; /* Отступ между сайдбаром и статьями */
+        }
+
+        /* === САЙДБАР (2 Раздельные карточки) === */
+        .sidebar { 
+            position: sticky; 
+            top: 24px; 
+            height: calc(100vh - 48px); 
+            display: flex; 
+            flex-direction: column; 
+            gap: 16px; /* Расстояние между лого и меню */
+            z-index: 100; 
+            padding-left: 20px; /* Отступ от левого края экрана */
+        }
+
+        /* Блок 1: Логотип */
+        .sidebar-brand-card {
+            background: var(--bg-card);
+            padding: 30px 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            text-align: center;
+        }
+
+        .logo { 
+            font-family: var(--font-head); 
+            font-weight: 700; 
+            font-size: 1.5rem; 
+            color: var(--accent-primary); 
+            line-height: 1.2; 
+            margin-bottom: 8px; 
+            display: block; 
+        }
+        
+        .slogan { 
+            font-size: 0.8rem; 
+            color: var(--text-muted); 
+            line-height: 1.4; 
+        }
+
+        /* Блок 2: Навигация */
+        .sidebar-nav-card {
+            background: var(--bg-card);
+            padding: 25px 15px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            flex-grow: 1; 
+            overflow-y: auto;
+        }
+
+        .nav-group-title { 
+            font-size: 0.7rem; 
+            text-transform: uppercase; 
+            color: #A1A1A6; 
+            margin: 0 0 10px 15px; 
+            letter-spacing: 1.5px; 
+            font-weight: 700; 
+        }
+
+        .sidebar-nav-card ul { margin-bottom: 25px; }
+
+        .nav-link { 
+            display: flex; 
+            align-items: center; 
+            padding: 10px 16px; 
+            border-radius: 12px; 
+            font-weight: 500;
+            font-size: 0.95rem; 
+            color: var(--text-main); 
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-link:hover { 
+            background-color: rgba(0,0,0,0.03); 
+            transform: translateX(4px);
+        }
+
+        .nav-link.active { 
+            background-color: var(--accent-light); 
+            color: var(--accent-primary); 
+        }
+
+        /* === ПРАВАЯ ЧАСТЬ (Контент) === */
+        main {
+            /* УБРАЛИ БЕЛУЮ ПОДЛОЖКУ И ТЕНИ */
+            background: transparent;
+            padding-top: 24px; /* Чтобы статьи начинались на одном уровне с сайдбаром */
+        }
+
+        @media (max-width: 1000px) {
+            .app-container { grid-template-columns: 1fr; gap: 0; }
+            .sidebar { display: none; }
+            main { padding: 20px; }
+        }
+
+        /* ШТОРКА */
+        .page-curtain {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--accent-primary); z-index: 999999;
+            display: flex; align-items: center; justify-content: center;
+            transform: translateY(100%); pointer-events: none; will-change: transform; 
+        }
+        .curtain-text { font-family: var(--font-head); font-size: 3rem; font-weight: 700; color: #FFFFFF; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div id="transition-curtain" class="page-curtain" transition:persist>
+    <div class="curtain-text">ЧИТАЯ ОПЕРУ</div>
+</div>
+
+<div class="app-container">
+    <aside class="sidebar">
+        <!-- КАРТОЧКА 1: ЛОГОТИП -->
+        <div class="sidebar-brand-card">
+            <a href="/" class="logo">ЧИТАЯ ОПЕРУ</a>
+            <p class="slogan">Блог о либретто, смыслах и судьбах</p>
+        </div>
+        
+        <!-- КАРТОЧКА 2: МЕНЮ -->
+        <nav class="sidebar-nav-card">
+            <div class="nav-group-title">Навигация</div>
+            <ul>
+                <li><a href="/" class={`nav-link ${currentPath === '/' ? 'active' : ''}`}>Главная</a></li>
+                <li><a href="/about" class={`nav-link ${currentPath.startsWith('/about') ? 'active' : ''}`}>О блоге</a></li>
+            </ul>
+            
+            <div class="nav-group-title">Рубрики</div>
+            <ul>
+                <li><a href="/librettists" class={`nav-link ${currentPath.startsWith('/librettists') ? 'active' : ''}`}>Либреттисты</a></li>
+                <li><a href="/opera-plots" class={`nav-link ${currentPath.startsWith('/opera-plots') ? 'active' : ''}`}>Оперные сюжеты</a></li>
+                <li><a href="/history" class={`nav-link ${currentPath.startsWith('/history') ? 'active' : ''}`}>История</a></li>
+                <li><a href="/censourship" class={`nav-link ${currentPath.startsWith('/censourship') ? 'active' : ''}`}>Цензура</a></li>
+                <li><a href="/glossary" class={`nav-link ${currentPath.startsWith('/glossary') ? 'active' : ''}`}>Глоссарий</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- ТЕПЕРЬ ТУТ ПРОСТО ЧИСТЫЙ КОНТЕНТ БЕЗ РАМОК -->
+    <main>
+        <slot /> 
+    </main>
+</div>
+
+<script is:inline>
+    document.addEventListener('astro:before-preparation', event => {
+        const curtain = document.getElementById('transition-curtain');
+        const originalLoader = event.loader;
+        event.loader = async function() {
+            curtain.style.transition = 'transform 0.6s cubic-bezier(0.65, 0, 0.35, 1)';
+            curtain.style.transform = 'translateY(0)';
+            await new Promise(resolve => setTimeout(resolve, 600));
+            await originalLoader();
+        };
+    });
+
+    document.addEventListener('astro:after-swap', () => {
+        const curtain = document.getElementById('transition-curtain');
+        requestAnimationFrame(() => {
+            curtain.style.transition = 'transform 0.6s cubic-bezier(0.65, 0, 0.35, 1)';
+            curtain.style.transform = 'translateY(-100%)';
+            setTimeout(() => { curtain.style.transition = 'none'; curtain.style.transform = 'translateY(100%)'; }, 650);
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -174,17 +174,17 @@ const currentPath = Astro.url.pathname;
             <ul>
                 <!-- ДОБАВЛЕНЫ СЛЕШИ В КОНЦЕ ССЫЛОК -->
                 <li><a href="/" class={`nav-link ${currentPath === '/' ? 'active' : ''}`}>Главная</a></li>
-                <li><a href="/about/" class={`nav-link ${currentPath.startsWith('/about') ? 'active' : ''}`}>О блоге</a></li>
+                <li><a href="/about" class={`nav-link ${currentPath.startsWith('/about') ? 'active' : ''}`}>О блоге</a></li>
             </ul>
             
             <div class="nav-group-title">Рубрики</div>
             <ul>
                 <!-- ДОБАВЛЕНЫ СЛЕШИ В КОНЦЕ ССЫЛОК -->
-                <li><a href="/librettists/" class={`nav-link ${currentPath.startsWith('/librettists') ? 'active' : ''}`}>Либреттисты</a></li>
-                <li><a href="/opera-plots/" class={`nav-link ${currentPath.startsWith('/opera-plots') ? 'active' : ''}`}>Оперные сюжеты</a></li>
-                <li><a href="/history/" class={`nav-link ${currentPath.startsWith('/history') ? 'active' : ''}`}>История</a></li>
-                <li><a href="/censourship/" class={`nav-link ${currentPath.startsWith('/censourship') ? 'active' : ''}`}>Цензура</a></li>
-                <li><a href="/glossary/" class={`nav-link ${currentPath.startsWith('/glossary') ? 'active' : ''}`}>Глоссарий</a></li>
+                <li><a href="/librettists" class={`nav-link ${currentPath.startsWith('/librettists') ? 'active' : ''}`}>Либреттисты</a></li>
+                <li><a href="/opera-plots" class={`nav-link ${currentPath.startsWith('/opera-plots') ? 'active' : ''}`}>Оперные сюжеты</a></li>
+                <li><a href="/history" class={`nav-link ${currentPath.startsWith('/history') ? 'active' : ''}`}>История</a></li>
+                <li><a href="/censourship" class={`nav-link ${currentPath.startsWith('/censourship') ? 'active' : ''}`}>Цензура</a></li>
+                <li><a href="/glossary" class={`nav-link ${currentPath.startsWith('/glossary') ? 'active' : ''}`}>Глоссарий</a></li>
             </ul>
         </nav>
     </aside>

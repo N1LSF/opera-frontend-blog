@@ -60,6 +60,13 @@ const searchItems = posts.map(post => ({
                     
                     <!-- ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ -->
                     <a href={`/blog/${heroPost.slug?.current || '#'}/`} class="btn-primary">Читать статью</a>
+                </div>
+                {heroPost.mainImage && (
+                    <div class="hero-image">
+                        <img src={urlFor(heroPost.mainImage).url()} alt={heroPost.title} />
+                    </div>
+                )}
+            </div>
         )}
 
         <!-- СЕТКА СТАТЕЙ -->

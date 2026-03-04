@@ -145,10 +145,6 @@ const currentPath = Astro.url.pathname;
 </head>
 <body>
 
-<div id="transition-curtain" class="page-curtain" transition:persist>
-    <div class="curtain-text">ЧИТАЯ ОПЕРУ</div>
-</div>
-
 <div class="app-container">
     <aside class="sidebar">
         <div class="sidebar-brand-card">
@@ -178,27 +174,41 @@ const currentPath = Astro.url.pathname;
         <slot /> 
     </main>
 </div>
-
 <script is:inline>
+    // Сразу прячем шторку за нижним краем при загрузке
+    function resetCurtain() {
+        const curtain = document.getElementById('transition-curtain');
+        if (curtain) {
+            curtain.style.transition = 'none';
+            curtain.style.transform = 'translateY(100%)';
+        }
+    }
+
+    // Показываем шторку — мгновенно перекрываем экран
     document.addEventListener('astro:before-preparation', () => {
         const curtain = document.getElementById('transition-curtain');
         if (curtain) {
-            curtain.style.transition = 'transform 0.5s ease-in-out';
-            curtain.style.transform = 'translateY(0)';
+            curtain.style.transition = 'none';
+            curtain.style.transform = 'translateY(0%)';
         }
     });
 
+    // После свапа — уводим шторку вверх
     document.addEventListener('astro:after-swap', () => {
         const curtain = document.getElementById('transition-curtain');
         if (curtain) {
-            curtain.style.transform = 'translateY(-100%)';
             setTimeout(() => {
-                curtain.style.transition = 'none';
-                curtain.style.transform = 'translateY(100%)';
-            }, 500);
+                curtain.style.transition = 'transform 0.6s ease-in-out';
+                curtain.style.transform = 'translateY(-100%)';
+            }, 50);
+            setTimeout(() => {
+                resetCurtain();
+            }, 700);
         }
     });
-</script>
 
+    // При первой загрузке тоже прячем
+    resetCurtain();
+</script>
 </body>
 </html>

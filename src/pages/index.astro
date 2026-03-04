@@ -2,6 +2,8 @@
 import { sanityClient, urlFor } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro'; 
 
+export const prerender = true;
+
 // ЗАПРАШИВАЕМ ПОЛЕ excerpt
 const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**"))] | order(publishedAt desc){
   title,

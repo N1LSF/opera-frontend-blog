@@ -1,6 +1,6 @@
 ---
 // src/layouts/MainLayout.astro
-//import { ViewTransitions } from 'astro:transitions';
+import { ViewTransitions } from 'astro:transitions';
 
 const { title } = Astro.props;
 const currentPath = Astro.url.pathname;
@@ -14,7 +14,7 @@ const currentPath = Astro.url.pathname;
     <title>{title} | Читая Оперу</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
-    <!-- ViewTransitions fallback="swap" /> -->
+    <ViewTransitions fallback="swap" />
     
     <style is:global>
         ::view-transition-old(root),

@@ -1,4 +1,6 @@
 ---
+export const prerender = true; // <--- ВОТ ЭТА МАГИЧЕСКАЯ СТРОКА ДЕЛАЕТ САЙТ БЫСТРЫМ
+
 import { sanityClient, urlFor } from '../../lib/sanity';
 import MainLayout from '../../layouts/MainLayout.astro';
 import { PortableText } from 'astro-portabletext';
@@ -34,7 +36,6 @@ if (!post) {
   return Astro.redirect('/404');
 }
 ---
-
 <MainLayout title={post.title}>
     <article class="article-container">
         

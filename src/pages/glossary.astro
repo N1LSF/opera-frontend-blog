@@ -2,7 +2,7 @@
 import { sanityClient } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro';
 
-const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**")) && "glossary" in categories[]->slug.current] | order(title asc){
+const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**")) && "glossarii" in categories[]->slug.current] | order(title asc){
   title,
   slug
 }`);

@@ -17,7 +17,8 @@ const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("draf
 }`);
 
 const heroPost = posts[0];
-const otherPosts = posts.slice(1);
+// Берем только первые 12 постов для сетки, чтобы главная не весила тонну
+const otherPosts = posts.slice(1, 13);
 
 const searchItems = posts.map(post => ({
   title: post.title || '',
@@ -49,15 +50,16 @@ const searchItems = posts.map(post => ({
                         <div class="tag">{heroPost.categoryTitles[0]}</div>
                     )}
                     <h2 class="hero-title">
-                        <a href={`/blog/${heroPost.slug?.current || '#'}`}>{heroPost.title}</a>
+                        <!-- ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ -->
+                        <a href={`/blog/${heroPost.slug?.current || '#'}/`}>{heroPost.title}</a>
                     </h2>
                     
-                    <!-- ВЫВОДИМ НАСТОЯЩЕЕ ОПИСАНИЕ ИЗ SANITY -->
                     <p class="hero-excerpt">
                         {heroPost.excerpt || 'Нажмите "Читать статью", чтобы узнать подробности и погрузиться в историю этого произведения.'}
                     </p>
                     
-                    <a href={`/blog/${heroPost.slug?.current || '#'}`} class="btn-primary">Читать статью</a>
+                    <!-- ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ -->
+                    <a href={`/blog/${heroPost.slug?.current || '#'}/`} class="btn-primary">Читать статью</a>
                 </div>
                 {heroPost.mainImage && (
                     <div class="hero-image">
@@ -76,14 +78,18 @@ const searchItems = posts.map(post => ({
             {otherPosts.map((post) => (
                 <article class="article-card">
                     {post.mainImage && (
-                        <a href={`/blog/${post.slug?.current || '#'}`}>
+                        /* ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ */
+                        <a href={`/blog/${post.slug?.current || '#'}/`}>
                             <div class="article-image">
                                 <img src={urlFor(post.mainImage).url()} alt={post.title} />
                             </div>
                         </a>
                     )}
                     <div class="article-body">
-                        <h3 class="article-title"><a href={`/blog/${post.slug?.current || '#'}`}>{post.title}</a></h3>
+                        <h3 class="article-title">
+                            /* ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ */
+                            <a href={`/blog/${post.slug?.current || '#'}/`}>{post.title}</a>
+                        </h3>
                         <div class="article-footer">
                             <div class="meta-flex">
                                 {post.authorImage ? (
@@ -148,7 +154,7 @@ const searchItems = posts.map(post => ({
 
         if (!input || !resultsBox) return;
 
-        // Очищаем старый слушатель (если был), чтобы не дублировался
+        // Очищаем старый слушатель (если был)
         const newInput = input.cloneNode(true);
         input.parentNode.replaceChild(newInput, input);
 
@@ -166,11 +172,9 @@ const searchItems = posts.map(post => ({
                 const catStr = (item.categories || '').toLowerCase();
 
                 if (query.length <= 2) {
-                    // Поиск по началу слов
                     const checkWords = (str) => str.split(/[\s\-«»",.]+/).some(word => word.startsWith(query));
                     return checkWords(titleStr) || checkWords(authorStr) || checkWords(catStr);
                 } else {
-                    // Поиск вхождения
                     return titleStr.includes(query) || authorStr.includes(query) || catStr.includes(query);
                 }
             });
@@ -178,7 +182,8 @@ const searchItems = posts.map(post => ({
             if (filteredPosts.length > 0) {
                 resultsBox.innerHTML = filteredPosts.map(item => 
                     `<li style="margin: 0; padding: 0;">
-                        <a href="/blog/${item.slug}" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 12px 24px; color: #2C2C2C; text-decoration: none; border-left: 3px solid transparent; transition: background 0.2s;" onmouseover="this.style.background='#fdf8f8'" onmouseout="this.style.background='transparent'">
+                        <!-- ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ -->
+                        <a href="/blog/${item.slug}/" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 12px 24px; color: #2C2C2C; text-decoration: none; border-left: 3px solid transparent; transition: background 0.2s;" onmouseover="this.style.background='#fdf8f8'" onmouseout="this.style.background='transparent'">
                             <span style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</span>
                             ${item.author ? `<span style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #555; background: #F0F0F0; padding: 4px 12px 4px 6px; border-radius: 50px; white-space: nowrap; flex-shrink: 0;">
                                 ${item.authorAvatar ? `<img src="${item.authorAvatar}" alt="" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover; display: block;">` : `👤`}
@@ -193,14 +198,15 @@ const searchItems = posts.map(post => ({
             resultsBox.style.display = 'block';
         });
 
-        // Закрытие по клику вне
         document.addEventListener('click', (e) => {
             if (resultsBox && !e.target.closest('.search-wrapper')) { 
                 resultsBox.style.display = 'none'; 
             }
-        }, { once: true }); // once: true удалит слушатель после клика, чтобы не копились
+        }, { once: true });
     }
 
-    // Запускаем при загрузке страницы и при переходах
+    // ИСПОЛЬЗУЕМ ОБЫЧНЫЙ DOMContentLoaded, ТАК КАК VIEW TRANSITIONS ОТКЛЮЧЕНЫ
+    document.addEventListener('DOMContentLoaded', initSearch);
+    // На всякий случай оставляем и Astro-событие, если включишь VT обратно
     document.addEventListener('astro:page-load', initSearch);
 </script>

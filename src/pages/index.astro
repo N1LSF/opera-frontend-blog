@@ -1,104 +1,22 @@
 ---
-import { sanityClient, urlFor } from '../lib/sanity';
+// ЗАКОММЕНТИРУЙ ЭТИ СТРОКИ (поставь // в начале)
+// import { sanityClient, urlFor } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro'; 
 
 export const prerender = true;
 
-// ЗАПРАШИВАЕМ ПОЛЕ excerpt
-const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**"))] | order(publishedAt desc){
-  title,
-  slug,
-  excerpt,
-  publishedAt,
-  "authorName": author->name,
-  "authorImage": author->image,
-  "categoryTitles": categories[]->title,
-  mainImage
-}`);
-
-const heroPost = posts[0];
-const otherPosts = posts.slice(1);
-
-const searchItems = posts.map(post => ({
-  title: post.title || '',
-  author: post.authorName || '',
-  authorAvatar: post.authorImage ? urlFor(post.authorImage).width(40).height(40).url() : null,
-  categories: post.categoryTitles ? post.categoryTitles.join(' ') : '',
-  slug: post.slug?.current || '#'
-}));
+// ВМЕСТО ЗАПРОСА К SANITY — ПУСТОЙ МАССИВ ДЛЯ ТЕСТА
+const posts = []; 
+const heroPost = null;
+const otherPosts = [];
+const searchItems = [];
 ---
 
-<MainLayout title="Главная">
-    <main class="content">
-        
-        <!-- ПОИСК -->
-        <div class="search-wrapper">
-            <svg class="search-icon" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" id="searchInput" class="search-input" placeholder="Найти оперу, автора или рубрику..." autocomplete="off">
-            <ul id="searchResults" class="search-results-dropdown"></ul>
-        </div>
-
-        <!-- ГЛАВНАЯ КАРТОЧКА -->
-        {heroPost && (
-            <div class="hero-post">
-                <div class="hero-content">
-                    {heroPost.categoryTitles && heroPost.categoryTitles.length > 0 && (
-                        <div class="tag">{heroPost.categoryTitles[0]}</div>
-                    )}
-                    <h2 class="hero-title">
-                        <a href={`/blog/${heroPost.slug?.current || '#'}`}>{heroPost.title}</a>
-                    </h2>
-                    
-                    <!-- ВЫВОДИМ НАСТОЯЩЕЕ ОПИСАНИЕ ИЗ SANITY -->
-                    <p class="hero-excerpt">
-                        {heroPost.excerpt || 'Нажмите "Читать статью", чтобы узнать подробности и погрузиться в историю этого произведения.'}
-                    </p>
-                    
-                    <a href={`/blog/${heroPost.slug?.current || '#'}`} class="btn-primary">Читать статью</a>
-                </div>
-                {heroPost.mainImage && (
-                    <div class="hero-image">
-                        <img src={urlFor(heroPost.mainImage).url()} alt={heroPost.title} />
-                    </div>
-                )}
-            </div>
-        )}
-
-        <!-- СЕТКА СТАТЕЙ -->
-        <div class="section-header">
-            <h2>Свежие материалы</h2>
-        </div>
-
-        <div class="articles-grid">
-            {otherPosts.map((post) => (
-                <article class="article-card">
-                    {post.mainImage && (
-                        <a href={`/blog/${post.slug?.current || '#'}`}>
-                            <div class="article-image">
-                                <img src={urlFor(post.mainImage).url()} alt={post.title} />
-                            </div>
-                        </a>
-                    )}
-                    <div class="article-body">
-                        <h3 class="article-title"><a href={`/blog/${post.slug?.current || '#'}`}>{post.title}</a></h3>
-                        <div class="article-footer">
-                            <div class="meta-flex">
-                                {post.authorImage ? (
-                                    <div class="author-avatar" style={`background-image: url('${urlFor(post.authorImage).width(50).height(50).url()}');`}></div>
-                                ) : (
-                                    <div class="author-avatar"></div>
-                                )}
-                                {post.authorName || 'Неизвестный'}
-                            </div>
-                            <span>{new Date(post.publishedAt).toLocaleDateString('ru-RU')}</span>
-                        </div>
-                    </div>
-                </article>
-            ))}
-        </div>
+<MainLayout title="Тест скорости">
+    <main style="padding: 100px; text-align: center;">
+        <h1>Если это загрузилось БЫСТРО — значит тормозит SANITY</h1>
+        <p>Если это ВСЁ РАВНО грузится 10 секунд — значит проблема в браузере или провайдере.</p>
+        <a href="/about/" style="color: red; font-size: 20px;">Нажми сюда для проверки перехода на About</a>
     </main>
 </MainLayout>
 

@@ -2,9 +2,9 @@
 import { sanityClient, urlFor } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro'; 
 
+// В режиме output: 'static' prerender не обязателен, но пусть будет для явности
 export const prerender = true;
 
-// ЗАПРАШИВАЕМ ПОЛЕ excerpt
 const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**"))] | order(publishedAt desc){
   title,
   slug,
@@ -17,13 +17,13 @@ const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("draf
 }`);
 
 const heroPost = posts[0];
-// Берем только первые 12 постов для сетки, чтобы главная не весила тонну
 const otherPosts = posts.slice(1, 13);
 
 const searchItems = posts.map(post => ({
   title: post.title || '',
   author: post.authorName || '',
-  authorAvatar: post.authorImage ? urlFor(post.authorImage).width(40).height(40).url() : null,
+  // Оптимизируем аватарки для поиска (40x40)
+  authorAvatar: post.authorImage ? urlFor(post.authorImage).width(40).height(40).auto('format').url() : null,
   categories: post.categoryTitles ? post.categoryTitles.join(' ') : '',
   slug: post.slug?.current || '#'
 }));
@@ -50,20 +50,23 @@ const searchItems = posts.map(post => ({
                         <div class="tag">{heroPost.categoryTitles[0]}</div>
                     )}
                     <h2 class="hero-title">
-                        <!-- ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ -->
                         <a href={`/blog/${heroPost.slug?.current || '#'}/`}>{heroPost.title}</a>
                     </h2>
                     
                     <p class="hero-excerpt">
-                        {heroPost.excerpt || 'Нажмите "Читать статью", чтобы узнать подробности и погрузиться в историю этого произведения.'}
+                        {heroPost.excerpt || 'Нажмите "Читать статью", чтобы узнать подробности...'}
                     </p>
                     
-                    <!-- ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ -->
                     <a href={`/blog/${heroPost.slug?.current || '#'}/`} class="btn-primary">Читать статью</a>
                 </div>
                 {heroPost.mainImage && (
                     <div class="hero-image">
-                        <img src={urlFor(heroPost.mainImage).url()} alt={heroPost.title} />
+                        <!-- ОПТИМИЗАЦИЯ: Ширина 800px, автоформат WebP -->
+                        <img 
+                            src={urlFor(heroPost.mainImage).width(800).auto('format').url()} 
+                            alt={heroPost.title} 
+                            loading="eager"
+                        />
                     </div>
                 )}
             </div>
@@ -77,15 +80,26 @@ const searchItems = posts.map(post => ({
         <div class="articles-grid">
             {otherPosts.map((post) => (
                 <article class="article-card">
+                    {post.mainImage && (
+                        <a href={`/blog/${post.slug?.current || '#'}/`}>
+                            <div class="article-image">
+                                <!-- ОПТИМИЗАЦИЯ: Ширина 400px, обрезка под квадрат, автоформат -->
+                                <img 
+                                    src={urlFor(post.mainImage).width(400).height(300).fit('crop').auto('format').url()} 
+                                    alt={post.title} 
+                                    loading="lazy"
+                                />
+                            </div>
+                        </a>
+                    )}
                     <div class="article-body">
                         <h3 class="article-title">
-                            /* ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ */
                             <a href={`/blog/${post.slug?.current || '#'}/`}>{post.title}</a>
                         </h3>
                         <div class="article-footer">
                             <div class="meta-flex">
                                 {post.authorImage ? (
-                                    <div class="author-avatar" style={`background-image: url('${urlFor(post.authorImage).width(50).height(50).url()}');`}></div>
+                                    <div class="author-avatar" style={`background-image: url('${urlFor(post.authorImage).width(50).height(50).auto('format').url()}');`}></div>
                                 ) : (
                                     <div class="author-avatar"></div>
                                 )}
@@ -101,6 +115,7 @@ const searchItems = posts.map(post => ({
 </MainLayout>
 
 <style>
+    /* Твои стили без изменений */
     .content { padding: 40px 60px; }
     .search-wrapper { position: relative; margin-bottom: 50px; max-width: 600px; z-index: 100; }
     .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #999; pointer-events: none; transition: 0.3s; }
@@ -139,14 +154,13 @@ const searchItems = posts.map(post => ({
 </style>
 
 <script is:inline define:vars={{ searchItems }}>
-    // Функция запуска поиска
+    // Твой скрипт поиска (без изменений, кроме одной ссылки)
     function initSearch() {
         const input = document.getElementById('searchInput');
         const resultsBox = document.getElementById('searchResults');
 
         if (!input || !resultsBox) return;
 
-        // Очищаем старый слушатель (если был)
         const newInput = input.cloneNode(true);
         input.parentNode.replaceChild(newInput, input);
 
@@ -174,7 +188,7 @@ const searchItems = posts.map(post => ({
             if (filteredPosts.length > 0) {
                 resultsBox.innerHTML = filteredPosts.map(item => 
                     `<li style="margin: 0; padding: 0;">
-                        <!-- ДОБАВЛЕН СЛЕШ В КОНЦЕ ССЫЛКИ -->
+                        <!-- ССЫЛКА СО СЛЕШЕМ В КОНЦЕ -->
                         <a href="/blog/${item.slug}/" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 12px 24px; color: #2C2C2C; text-decoration: none; border-left: 3px solid transparent; transition: background 0.2s;" onmouseover="this.style.background='#fdf8f8'" onmouseout="this.style.background='transparent'">
                             <span style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</span>
                             ${item.author ? `<span style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #555; background: #F0F0F0; padding: 4px 12px 4px 6px; border-radius: 50px; white-space: nowrap; flex-shrink: 0;">
@@ -197,8 +211,6 @@ const searchItems = posts.map(post => ({
         }, { once: true });
     }
 
-    // ИСПОЛЬЗУЕМ ОБЫЧНЫЙ DOMContentLoaded, ТАК КАК VIEW TRANSITIONS ОТКЛЮЧЕНЫ
     document.addEventListener('DOMContentLoaded', initSearch);
-    // На всякий случай оставляем и Astro-событие, если включишь VT обратно
     document.addEventListener('astro:page-load', initSearch);
 </script>

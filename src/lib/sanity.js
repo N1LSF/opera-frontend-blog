@@ -6,7 +6,7 @@ export const sanityClient = createClient({
   projectId: 'ipigbfxk', // Твой Project ID уже вставлен
   dataset: 'opera',
   apiVersion: '2026-03-03', // Твой API Version
-  useCdn: true,
+  useCdn: false,
 });
 
 const builder = imageUrlBuilder(sanityClient);

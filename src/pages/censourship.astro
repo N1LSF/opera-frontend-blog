@@ -33,7 +33,7 @@ const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("draf
                 {posts.map((post) => (
                     <article class="article-card">
                         {post.mainImage && (
-                            <a href={`/blog/${post.slug?.current}`}>
+                            <a href={`/blog/${post.slug?.current}/`}>
                                 <div class="article-image">
                                     <img 
                                         src={urlFor(post.mainImage).width(400).height(260).auto('format').url()} 
@@ -45,7 +45,7 @@ const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("draf
                         )}
                         <div class="article-body">
                             <h3 class="article-title">
-                                <a href={`/blog/${post.slug?.current}`}>{post.title}</a>
+                                <a href={`/blog/${post.slug?.current}/`}>{post.title}</a>
                             </h3>
                             <div class="article-footer" style="display: flex; justify-content: space-between;">
                                 <span>{post.authorName || 'Редакция'}</span>
@@ -89,25 +89,34 @@ const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("draf
     .no-posts { font-size: 1.2rem; color: var(--text-muted); font-weight: 500; }
 </style>
 
-<script is:inline>
-    const searchInput = document.getElementById('pageSearch');
-    const cards = document.querySelectorAll('.article-card');
-    const noResultsMsg = document.getElementById('noResults');
+<script>
+    // Используем document.addEventListener чтобы поиск работал после ViewTransitions
+    function initSearch() {
+        const searchInput = document.getElementById('pageSearch');
+        const cards = document.querySelectorAll('.article-card');
+        const noResultsMsg = document.getElementById('noResults');
 
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            let visibleCount = 0;
-            cards.forEach(card => {
-                const title = card.querySelector('.article-title').textContent.toLowerCase();
-                if (title.includes(query)) {
-                    card.style.display = 'flex';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const query = (e.target as HTMLInputElement).value.toLowerCase().trim();
+                let visibleCount = 0;
+                cards.forEach(card => {
+                    const title = card.querySelector('.article-title')?.textContent?.toLowerCase() || '';
+                    if (title.includes(query)) {
+                        (card as HTMLElement).style.display = 'flex';
+                        visibleCount++;
+                    } else {
+                        (card as HTMLElement).style.display = 'none';
+                    }
+                });
+                if (noResultsMsg) {
+                    noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
                 }
             });
-            if (noResultsMsg) noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
-        });
+        }
     }
+
+    // Запускаем при первой загрузке и после каждого перехода
+    initSearch();
+    document.addEventListener('astro:after-swap', initSearch);
 </script>

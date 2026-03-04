@@ -2,13 +2,11 @@
 import { sanityClient } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro';
 
-// Получаем статьи из рубрики Глоссарий, сразу сортируем по алфавиту (title asc)
-const posts = await sanityClient.fetch(`*[_type == "post" && category == "glossary"] | order(title asc){
+const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**")) && "glossary" in categories[]->slug.current] | order(title asc){
   title,
   slug
 }`);
 
-// МАГИЯ: Группируем по первой букве!
 const groupedPosts = posts.reduce((acc, post) => {
   const firstLetter = post.title.charAt(0).toUpperCase();
   if (!acc[firstLetter]) {
@@ -18,7 +16,6 @@ const groupedPosts = posts.reduce((acc, post) => {
   return acc;
 }, {});
 
-// Получаем массив букв, которые есть в базе (А, Б, В...)
 const letters = Object.keys(groupedPosts).sort();
 ---
 
@@ -31,14 +28,12 @@ const letters = Object.keys(groupedPosts).sort();
 
         {letters.length > 0 ? (
             <div class="glossary-container">
-                <!-- Навигация по буквам -->
                 <div class="alphabet-nav">
                     {letters.map((letter) => (
                         <a href={`#letter-${letter}`} class="letter-link">{letter}</a>
                     ))}
                 </div>
 
-                <!-- Сами термины, разбитые по буквам -->
                 <div class="terms-list">
                     {letters.map((letter) => (
                         <div class="letter-section" id={`letter-${letter}`}>
@@ -46,7 +41,7 @@ const letters = Object.keys(groupedPosts).sort();
                             <ul class="term-items">
                                 {groupedPosts[letter].map((post) => (
                                     <li>
-                                        <a href={`/blog/${post.slug?.current || '#'}`} class="term-link">
+                                        <a href={`/blog/${post.slug?.current || '#'}/`} class="term-link">
                                             {post.title}
                                         </a>
                                     </li>
@@ -71,12 +66,10 @@ const letters = Object.keys(groupedPosts).sort();
     
     .glossary-container { background: var(--bg-card); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow); }
     
-    /* Панель с буквами (А Б В Г...) */
     .alphabet-nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); }
     .letter-link { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: var(--bg-body); border-radius: 8px; font-weight: 600; color: var(--accent-primary); transition: 0.2s; }
     .letter-link:hover { background: var(--accent-primary); color: #fff; transform: translateY(-2px); }
 
-    /* Секция одной буквы */
     .letter-section { margin-bottom: 40px; }
     .letter-heading { font-family: var(--font-head); font-size: 2rem; color: var(--accent-gold); margin-bottom: 20px; border-bottom: 2px solid var(--accent-light); padding-bottom: 5px; display: inline-block; min-width: 40px; }
     

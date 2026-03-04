@@ -2,8 +2,7 @@
 import { sanityClient, urlFor } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro';
 
-// ИЩЕМ ТОЛЬКО ОПУБЛИКОВАННЫЕ СТАТЬИ (Игнорируем черновики drafts.**)
-const posts = await sanityClient.fetch(`*[_type == "post" && category == "opera-plots" && !(_id in path("drafts.**"))] | order(publishedAt desc) {
+const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**")) && "opera-plots" in categories[]->slug.current] | order(publishedAt desc) {
   title, slug, mainImage, "composerName": composer->name, "countryName": country->title, "eraTitle": era->title
 }`);
 const countries = await sanityClient.fetch(`*[_type == "country"]{title}`);
@@ -58,8 +57,12 @@ const composers = await sanityClient.fetch(`*[_type == "composer"]{name}`);
                 <div class="plots-grid" id="plotsGrid">
                     {posts.map((post) => (
                         <article class="plot-card" data-country={post.countryName || 'none'} data-era={post.eraTitle || 'none'} data-composer={post.composerName || 'none'}>
-                            <a href={`/blog/${post.slug?.current || '#'}`}>
-                                {post.mainImage ? ( <img class="plot-img" src={urlFor(post.mainImage).width(600).height(400).url()} alt={post.title} /> ) : ( <div class="plot-img" style="background: #eee;"></div> )}
+                            <a href={`/blog/${post.slug?.current || '#'}/`}>
+                                {post.mainImage ? (
+                                    <img class="plot-img" src={urlFor(post.mainImage).width(600).height(400).auto('format').url()} alt={post.title} loading="lazy" />
+                                ) : (
+                                    <div class="plot-img" style="background: #eee;"></div>
+                                )}
                                 <div class="plot-info">
                                     <h2 class="plot-title">{post.title}</h2>
                                     <div class="plot-tags">
@@ -72,7 +75,6 @@ const composers = await sanityClient.fetch(`*[_type == "composer"]{name}`);
                         </article>
                     ))}
                     
-                    <!-- КРАСИВАЯ ЗАГЛУШКА ДЛЯ ПУСТОГО ПОИСКА -->
                     <div class="no-posts-container" id="noResults" style="display: none; grid-column: 1 / -1; margin-top: 20px;">
                         <p class="no-posts">По вашему запросу ничего не найдено 😔</p>
                         <p style="font-size: 0.9rem; color: #999; margin-top: 10px;">Попробуйте очистить фильтры или ввести другое название.</p>
@@ -80,7 +82,6 @@ const composers = await sanityClient.fetch(`*[_type == "composer"]{name}`);
                 </div>
             </div>
         ) : (
-            <!-- КРАСИВАЯ ЗАГЛУШКА ДЛЯ ПУСТОЙ РУБРИКИ -->
             <div class="no-posts-container">
                 <p class="no-posts">В этой рубрике пока нет статей.</p>
                 <p style="font-size: 0.9rem; color: #999; margin-top: 10px;">Зайдите в Sanity, создайте статью и выберите категорию "Оперные сюжеты".</p>
@@ -115,20 +116,21 @@ const composers = await sanityClient.fetch(`*[_type == "composer"]{name}`);
     .plot-tags { font-size: 0.8rem; color: var(--accent-primary); font-weight: 500; display: flex; flex-wrap: wrap; gap: 8px; }
     .plot-tags span { background: var(--accent-light); padding: 4px 10px; border-radius: 50px; }
     
-    /* Стили для всех заглушек */
     .no-posts-container { background: #fff; padding: 40px; border-radius: var(--radius-lg); text-align: center; border: 1px dashed #ccc; }
     .no-posts { font-size: 1.2rem; color: var(--text-muted); font-weight: 500; }
 </style>
 
-<script is:inline>
-    const textSearch = document.getElementById('textSearch');
-    const countryFilter = document.getElementById('countryFilter');
-    const eraFilter = document.getElementById('eraFilter');
-    const composerFilter = document.getElementById('composerFilter');
-    const cards = document.querySelectorAll('.plot-card');
-    const noResultsMsg = document.getElementById('noResults');
+<script>
+    function initFilters() {
+        const textSearch = document.getElementById('textSearch') as HTMLInputElement;
+        const countryFilter = document.getElementById('countryFilter') as HTMLSelectElement;
+        const eraFilter = document.getElementById('eraFilter') as HTMLSelectElement;
+        const composerFilter = document.getElementById('composerFilter') as HTMLSelectElement;
+        const cards = document.querySelectorAll('.plot-card');
+        const noResultsMsg = document.getElementById('noResults');
 
-    if (textSearch && countryFilter) {
+        if (!textSearch || !countryFilter) return;
+
         function filterPosts() {
             const selectedCountry = countryFilter.value;
             const selectedEra = eraFilter.value;
@@ -138,22 +140,24 @@ const composers = await sanityClient.fetch(`*[_type == "composer"]{name}`);
             let visibleCount = 0;
             
             cards.forEach(card => {
-                const matchCountry = selectedCountry === 'all' || card.dataset.country === selectedCountry;
-                const matchEra = selectedEra === 'all' || card.dataset.era === selectedEra;
-                const matchComposer = selectedComposer === 'all' || card.dataset.composer === selectedComposer;
-                const title = card.querySelector('.plot-title').textContent.toLowerCase();
+                const el = card as HTMLElement;
+                const matchCountry = selectedCountry === 'all' || el.dataset.country === selectedCountry;
+                const matchEra = selectedEra === 'all' || el.dataset.era === selectedEra;
+                const matchComposer = selectedComposer === 'all' || el.dataset.composer === selectedComposer;
+                const title = card.querySelector('.plot-title')?.textContent?.toLowerCase() || '';
                 const matchText = title.includes(searchQuery);
 
-                if (matchCountry && matchEra && matchComposer && matchText) { 
-                    card.style.display = 'block'; 
-                    visibleCount++; 
-                } else { 
-                    card.style.display = 'none'; 
+                if (matchCountry && matchEra && matchComposer && matchText) {
+                    el.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    el.style.display = 'none';
                 }
             });
             
-            // Если карточек 0, показываем красивую заглушку
-            noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+            if (noResultsMsg) {
+                noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
         }
 
         textSearch.addEventListener('input', filterPosts);
@@ -161,4 +165,7 @@ const composers = await sanityClient.fetch(`*[_type == "composer"]{name}`);
         eraFilter.addEventListener('change', filterPosts);
         composerFilter.addEventListener('change', filterPosts);
     }
+
+    initFilters();
+    document.addEventListener('astro:after-swap', initFilters);
 </script>

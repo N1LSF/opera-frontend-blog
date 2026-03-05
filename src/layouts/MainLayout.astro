@@ -15,82 +15,6 @@ const currentPath = Astro.url.pathname;
     <ViewTransitions />
     
     <style is:global>
-    /* КАСТОМНЫЙ КУРСОР */
-@media (pointer: fine) {
-    *, *::before, *::after { cursor: none !important; }
-    
-    .custom-cursor {
-        position: fixed;
-        width: 10px;
-        height: 10px;
-        background: var(--accent-primary);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 999999;
-        transform: translate(-50%, -50%);
-        transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
-                    height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-                    background 0.3s ease,
-                    opacity 0.3s ease;
-        mix-blend-mode: difference;
-        will-change: left, top;
-    }
-
-    .custom-cursor.hovered {
-        width: 60px;
-        height: 60px;
-        background: #ffffff;
-    }
-}
-    /* КАСТОМНЫЙ СКРОЛЛБАР ДЛЯ САЙДБАРА */
-.sidebar-nav-card {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(128, 37, 37, 0.2) transparent;
-}
-
-.sidebar-nav-card::-webkit-scrollbar {
-    width: 3px;
-}
-
-.sidebar-nav-card::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.sidebar-nav-card::-webkit-scrollbar-thumb {
-    background: rgba(128, 37, 37, 0.2);
-    border-radius: 10px;
-}
-
-.sidebar-nav-card::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-primary);
-}
-
-/* КАСТОМНЫЙ СКРОЛЛБАР ДЛЯ ВСЕЙ СТРАНИЦЫ */
-html {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(128, 37, 37, 0.2) transparent;
-}
-
-html::-webkit-scrollbar {
-    width: 4px;
-}
-
-html::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-html::-webkit-scrollbar-thumb {
-    background: rgba(128, 37, 37, 0.2);
-    border-radius: 10px;
-}
-
-html::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-primary);
-}
-            .submenu { padding-left: 20px; margin-top: -4px; margin-bottom: 8px; border-left: 1px solid rgba(0,0,0,0.05); margin-left: 16px; }
-        .submenu-link { display: block; padding: 6px 12px; font-size: 0.85rem; color: var(--text-muted); border-radius: 8px; transition: 0.2s; }
-        .submenu-link:hover { color: var(--accent-primary); background: rgba(0,0,0,0.02); }
-        .submenu-link.active { color: var(--accent-primary); font-weight: 600; }
         ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; opacity: 1 !important; }
 
         :root {
@@ -112,7 +36,7 @@ html::-webkit-scrollbar-thumb:hover {
         
         body { background-color: var(--bg-body); color: var(--text-main); font-family: var(--font-body); line-height: 1.6; min-height: 100vh; }
         a { text-decoration: none; color: inherit; transition: 0.3s; }
-        <div class="custom-cursor" id="custom-cursor"></div>
+
         /* ОСНОВНАЯ СЕТКА */
         .app-container { 
             display: grid; 
@@ -161,6 +85,46 @@ html::-webkit-scrollbar-thumb:hover {
 
         main { background: transparent; padding-top: 24px; min-width: 0; }
 
+        /* ИСПРАВЛЕННАЯ ШТОРКА */
+        .page-curtain { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            background-color: var(--accent-primary); z-index: 999999; 
+            display: flex; align-items: center; justify-content: center; 
+            transform: translateY(100%); pointer-events: none; will-change: transform; 
+            visibility: hidden; 
+        }
+        .page-curtain.visible { visibility: visible; }
+        .curtain-text { font-family: var(--font-head); font-size: 3rem; font-weight: 700; color: #FFFFFF; text-align: center; opacity: 0; transition: opacity 0.3s ease; text-transform: uppercase; }
+        .page-curtain.visible .curtain-text { opacity: 1; }
+
+        /* === КАСТОМНЫЙ КУРСОР === */
+        @media (pointer: fine) {
+            *, *::before, *::after { cursor: none !important; }
+            
+            .custom-cursor {
+                position: fixed; width: 10px; height: 10px; background: var(--accent-primary);
+                border-radius: 50%; pointer-events: none; z-index: 999999;
+                transform: translate(-50%, -50%);
+                transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), height 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, opacity 0.3s ease;
+                mix-blend-mode: difference; will-change: left, top;
+            }
+
+            .custom-cursor.hovered { width: 60px; height: 60px; background: #ffffff; }
+        }
+
+        /* === КАСТОМНЫЕ СКРОЛЛБАРЫ === */
+        .sidebar-nav-card { scrollbar-width: thin; scrollbar-color: rgba(128, 37, 37, 0.2) transparent; }
+        .sidebar-nav-card::-webkit-scrollbar { width: 3px; }
+        .sidebar-nav-card::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-nav-card::-webkit-scrollbar-thumb { background: rgba(128, 37, 37, 0.2); border-radius: 10px; }
+        .sidebar-nav-card::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+
+        html { scrollbar-width: thin; scrollbar-color: rgba(128, 37, 37, 0.2) transparent; }
+        html::-webkit-scrollbar { width: 4px; }
+        html::-webkit-scrollbar-track { background: transparent; }
+        html::-webkit-scrollbar-thumb { background: rgba(128, 37, 37, 0.2); border-radius: 10px; }
+        html::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+
         /* === АДАПТИВ === */
         @media (max-width: 1000px) {
             .app-container { grid-template-columns: 1fr; gap: 0; }
@@ -169,33 +133,19 @@ html::-webkit-scrollbar-thumb:hover {
             .sidebar { 
                 position: fixed; top: 0; left: 0; height: 100vh; padding: 20px;
                 background: var(--bg-body); width: 320px; max-width: 85vw;
-                transform: translateX(-100%);
-                border-right: 1px solid rgba(0,0,0,0.05);
-                z-index: 999;
+                transform: translateX(-100%); border-right: 1px solid rgba(0,0,0,0.05); z-index: 999;
             }
             .sidebar-brand-card { display: none; }
             .sidebar.open { transform: translateX(0); box-shadow: 20px 0 50px rgba(0,0,0,0.1); }
             .sidebar-overlay.open { display: block; opacity: 1; }
         }
-
-        /* ИСПРАВЛЕННАЯ ШТОРКА */
-        .page-curtain { 
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
-            background-color: var(--accent-primary); z-index: 999999; 
-            display: flex; align-items: center; justify-content: center; 
-            transform: translateY(100%); pointer-events: none; will-change: transform; 
-            visibility: hidden; /* Прячем в покое */
-        }
-        .page-curtain.visible {
-            visibility: visible; /* Показываем при анимации */
-        }
-        .curtain-text { font-family: var(--font-head); font-size: 3rem; font-weight: 700; color: #FFFFFF; text-align: center; opacity: 0; transition: opacity 0.3s ease; text-transform: uppercase; }
-        .page-curtain.visible .curtain-text { opacity: 1; }
-        
         @media (max-width: 600px) { .curtain-text { font-size: 1.8rem; padding: 0 20px; } }
     </style>
 </head>
 <body>
+
+<!-- HTML КУРСОР ТУТ (внутри body, а не в стилях) -->
+<div class="custom-cursor" id="custom-cursor"></div>
 
 <div id="transition-curtain" class="page-curtain" transition:persist>
     <div class="curtain-text">ОПЕРА ГЛАЗАМИ ЧИТАТЕЛЯ</div>
@@ -217,7 +167,7 @@ html::-webkit-scrollbar-thumb:hover {
             <p class="slogan">Блог о либретто, смыслах и судьбах</p>
         </div>
         
-                <nav class="sidebar-nav-card">
+        <nav class="sidebar-nav-card">
             <div class="nav-group-title">Навигация</div>
             <ul>
                 <li><a href="/" class={`nav-link ${currentPath === '/' ? 'active' : ''}`}>Главная</a></li>
@@ -237,7 +187,6 @@ html::-webkit-scrollbar-thumb:hover {
                 <li><a href="/history/" class={`nav-link ${currentPath.startsWith('/history') ? 'active' : ''}`}>История создания</a></li>
                 <li><a href="/eternal-plots/" class={`nav-link ${currentPath.startsWith('/eternal-plots') ? 'active' : ''}`}>Вечные сюжеты</a></li>
                 <li><a href="/book-to-opera/" class={`nav-link ${currentPath.startsWith('/book-to-opera') ? 'active' : ''}`}>Из книги в оперу</a></li>
-                <!-- Оставил твое написание censourship, чтобы не сломать текущую страницу -->
                 <li><a href="/censourship/" class={`nav-link ${currentPath.startsWith('/censourship') ? 'active' : ''}`}>Цензура и скандалы</a></li>
                 <li><a href="/detective/" class={`nav-link ${currentPath.startsWith('/detective') ? 'active' : ''}`}>Оперный детектив</a></li>
                 <li><a href="/librettology/" class={`nav-link ${currentPath.startsWith('/librettology') ? 'active' : ''}`}>Либреттология</a></li>
@@ -252,72 +201,43 @@ html::-webkit-scrollbar-thumb:hover {
 </div>
 
 <script is:inline>
+    // АНИМАЦИЯ ШТОРКИ
     const ANIM_SPEED = 600; const EASING = 'cubic-bezier(0.45, 0, 0.55, 1)'; 
     function resetCurtain() { const c = document.getElementById('transition-curtain'); if(c){ c.style.transition='none'; c.style.transform='translateY(100%)'; c.classList.remove('visible'); } }
     document.addEventListener('astro:before-preparation', (ev) => { const c = document.getElementById('transition-curtain'); if(!c) return; const ol = ev.loader; ev.loader = async () => { c.style.transition='none'; c.style.transform='translateY(100%)'; await new Promise(r => requestAnimationFrame(r)); c.style.transition=`transform ${ANIM_SPEED}ms ${EASING}`; c.style.transform='translateY(0%)'; c.classList.add('visible'); await new Promise(r => setTimeout(r, ANIM_SPEED)); await ol(); }; });
     document.addEventListener('astro:after-swap', () => { const c = document.getElementById('transition-curtain'); if(!c) return; setTimeout(() => { c.style.transition=`transform ${ANIM_SPEED}ms ${EASING}`; c.style.transform='translateY(-100%)'; setTimeout(resetCurtain, ANIM_SPEED); }, 100); });
     resetCurtain();
 
-    function initMobileMenu() {
+    // МОБИЛЬНОЕ МЕНЮ И КУРСОР
+    function initLayoutScripts() {
+        // Меню
         const btn = document.getElementById('menu-btn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
         
-        if(!btn || !sidebar || !overlay) return;
-
-        function closeMenu() {
-            sidebar.classList.remove('open');
-            overlay.classList.remove('open');
-            document.body.style.overflow = ''; 
+        if(btn && sidebar && overlay) {
+            function closeMenu() { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; }
+            btn.addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; });
+            overlay.addEventListener('click', closeMenu);
+            sidebar.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', closeMenu));
         }
 
-        btn.addEventListener('click', () => {
-            sidebar.classList.add('open');
-            overlay.classList.add('open');
-            document.body.style.overflow = 'hidden'; 
-        });
-
-        overlay.addEventListener('click', closeMenu);
-        
-        sidebar.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', closeMenu);
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', initMobileMenu);
-    document.addEventListener('astro:page-load', initMobileMenu);
-        // КАСТОМНЫЙ КУРСОР
-    function initCursor() {
+        // Курсор
         const cursor = document.getElementById('custom-cursor');
-        if (!cursor) return;
-
-        // Двигаем курсор за мышкой
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-        });
-
-        // Скрываем когда мышь уходит за пределы окна
-        document.addEventListener('mouseleave', () => {
-            cursor.style.opacity = '0';
-        });
-        document.addEventListener('mouseenter', () => {
-            cursor.style.opacity = '1';
-        });
-
-        // Увеличиваем на всех кликабельных элементах
-        function bindHoverEvents() {
+        if (cursor) {
+            document.addEventListener('mousemove', (e) => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
+            document.addEventListener('mouseleave', () => { cursor.style.opacity = '0'; });
+            document.addEventListener('mouseenter', () => { cursor.style.opacity = '1'; });
+            
             document.querySelectorAll('a, button, .custom-select, .select-trigger, input, .plot-card, .nav-link').forEach(el => {
                 el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
                 el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
             });
         }
-
-        bindHoverEvents();
     }
 
-    initCursor();
-    document.addEventListener('astro:after-swap', initCursor);
+    document.addEventListener('DOMContentLoaded', initLayoutScripts);
+    document.addEventListener('astro:page-load', initLayoutScripts);
 </script>
 <DesignCustomizer />
 </body>

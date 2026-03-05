@@ -15,6 +15,51 @@ const currentPath = Astro.url.pathname;
     <ViewTransitions />
     
     <style is:global>
+    /* КАСТОМНЫЙ СКРОЛЛБАР ДЛЯ САЙДБАРА */
+.sidebar-nav-card {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128, 37, 37, 0.2) transparent;
+}
+
+.sidebar-nav-card::-webkit-scrollbar {
+    width: 3px;
+}
+
+.sidebar-nav-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-nav-card::-webkit-scrollbar-thumb {
+    background: rgba(128, 37, 37, 0.2);
+    border-radius: 10px;
+}
+
+.sidebar-nav-card::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+}
+
+/* КАСТОМНЫЙ СКРОЛЛБАР ДЛЯ ВСЕЙ СТРАНИЦЫ */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128, 37, 37, 0.2) transparent;
+}
+
+html::-webkit-scrollbar {
+    width: 4px;
+}
+
+html::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+    background: rgba(128, 37, 37, 0.2);
+    border-radius: 10px;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+}
             .submenu { padding-left: 20px; margin-top: -4px; margin-bottom: 8px; border-left: 1px solid rgba(0,0,0,0.05); margin-left: 16px; }
         .submenu-link { display: block; padding: 6px 12px; font-size: 0.85rem; color: var(--text-muted); border-radius: 8px; transition: 0.2s; }
         .submenu-link:hover { color: var(--accent-primary); background: rgba(0,0,0,0.02); }

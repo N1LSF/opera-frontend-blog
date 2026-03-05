@@ -1,0 +1,117 @@
+---
+---
+<div id="customizer-panel" class="customizer-panel">
+    <button id="customizer-toggle" class="customizer-toggle" title="Настройки дизайна">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+    </button>
+
+    <div class="panel-content">
+        <h3>Настройки Оперы</h3>
+        
+        <div class="control-group">
+            <label>Шрифт заголовков:</label>
+            <select id="head-font-select">
+                <option value="'Merriweather', serif">Merriweather (Книжный)</option>
+                <option value="'Playfair Display', serif">Playfair (Журнальный)</option>
+                <option value="'Cormorant Garamond', serif">Cormorant (Классика)</option>
+                <option value="'Inter', sans-serif">Inter (Современный)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Основной текст:</label>
+            <select id="body-font-select">
+                <option value="'Inter', sans-serif">Inter (Чистый)</option>
+                <option value="'Merriweather', serif">Merriweather (Сериф)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Акцентный цвет:</label>
+            <div class="color-picker">
+                <button class="color-btn" data-color="#802525" style="background: #802525;"></button>
+                <button class="color-btn" data-color="#CFA968" style="background: #CFA968;"></button>
+                <button class="color-btn" data-color="#1A2A3A" style="background: #1A2A3A;"></button>
+                <button class="color-btn" data-color="#2A2A2A" style="background: #2A2A2A;"></button>
+            </div>
+        </div>
+
+        <p class="hint">Выберите настройки, погуляйте по сайту. Когда определитесь — напишите мне!</p>
+    </div>
+</div>
+
+<style>
+    .customizer-panel {
+        position: fixed; bottom: 30px; right: 30px; z-index: 99999;
+        font-family: 'Inter', sans-serif;
+    }
+    .customizer-toggle {
+        width: 50px; height: 50px; border-radius: 50%; background: #fff;
+        border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        color: #802525; transition: 0.3s;
+    }
+    .customizer-toggle:hover { transform: rotate(90deg); }
+    
+    .panel-content {
+        position: absolute; bottom: 65px; right: 0; width: 280px;
+        background: #fff; border-radius: 20px; padding: 25px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        display: none; border: 1px solid rgba(0,0,0,0.05);
+    }
+    .customizer-panel.active .panel-content { display: block; }
+    
+    h3 { margin-bottom: 20px; font-size: 1.1rem; color: #802525; font-family: 'Merriweather', serif; }
+    .control-group { margin-bottom: 20px; }
+    label { display: block; font-size: 0.8rem; color: #666; margin-bottom: 8px; font-weight: 500; }
+    select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; outline: none; }
+    
+    .color-picker { display: flex; gap: 10px; }
+    .color-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    .color-btn:hover { transform: scale(1.1); }
+    
+    .hint { font-size: 0.75rem; color: #999; line-height: 1.4; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+</style>
+
+<script is:inline>
+    function initCustomizer() {
+        const panel = document.getElementById('customizer-panel');
+        const toggle = document.getElementById('customizer-toggle');
+        const headSelect = document.getElementById('head-font-select');
+        const bodySelect = document.getElementById('body-font-select');
+        const colorBtns = document.querySelectorAll('.color-btn');
+
+        // Открытие/закрытие
+        toggle?.addEventListener('click', () => panel.classList.toggle('active'));
+
+        // Применение настроек
+        function applySettings(head, body, color) {
+            document.documentElement.style.setProperty('--font-head', head);
+            document.documentElement.style.setProperty('--font-body', body);
+            document.documentElement.style.setProperty('--accent-primary', color);
+            
+            localStorage.setItem('opera-design', JSON.stringify({ head, body, color }));
+        }
+
+        // Загрузка из памяти
+        const saved = JSON.parse(localStorage.getItem('opera-design'));
+        if (saved) {
+            applySettings(saved.head, saved.body, saved.color);
+            headSelect.value = saved.head;
+            bodySelect.value = saved.body;
+        }
+
+        headSelect.addEventListener('change', (e) => applySettings(e.target.value, bodySelect.value, getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')));
+        bodySelect.addEventListener('change', (e) => applySettings(headSelect.value, e.target.value, getComputedStyle(document.documentElement).getPropertyValue('--accent-primary')));
+        
+        colorBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                applySettings(headSelect.value, bodySelect.value, btn.dataset.color);
+            });
+        });
+    }
+
+    // Запуск для Astro (учитывая переходы)
+    initCustomizer();
+    document.addEventListener('astro:after-swap', initCustomizer);
+</script>

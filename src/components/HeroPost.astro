@@ -1,0 +1,68 @@
+---
+import { urlFor } from '../lib/sanity';
+const { post } = Astro.props;
+
+if (!post) return null;
+---
+
+<div class="hero-post">
+    <div class="hero-content">
+        {post.categoryTitles && post.categoryTitles.length > 0 && (
+            <div class="tag">{post.categoryTitles[0]}</div>
+        )}
+        <h2 class="hero-title">
+            <a href={`/blog/${post.slug?.current || '#'}/`}>{post.title}</a>
+        </h2>
+        
+        <p class="hero-excerpt">
+            {post.excerpt || 'Нажмите "Читать статью", чтобы узнать подробности...'}
+        </p>
+        
+        <a href={`/blog/${post.slug?.current || '#'}/`} class="btn-primary">
+            Читать статью
+        </a>
+    </div>
+    {post.mainImage && (
+        <div class="hero-image">
+            <img 
+                src={urlFor(post.mainImage).width(800).auto('format').url()} 
+                alt={post.title} 
+                loading="eager"
+            />
+        </div>
+    )}
+</div>
+
+<style>
+    .hero-post { background: var(--bg-card); border-radius: var(--radius-lg); padding: 50px; margin-bottom: 60px; box-shadow: var(--shadow-soft); display: flex; align-items: center; justify-content: space-between; gap: 40px; }
+    .hero-content { flex: 1; max-width: 500px; }
+    
+    .tag { display: inline-block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 15px; }
+    
+    .hero-title { font-family: var(--font-head); font-size: 2.6rem; line-height: 1.2; margin-bottom: 20px; }
+    .hero-title a { color: var(--text-main); transition: color 0.2s; }
+    .hero-title a:hover { color: var(--accent-primary); }
+    
+    .hero-excerpt { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px; line-height: 1.6; }
+    
+    .btn-primary { display: inline-block; background: var(--accent-primary); color: #FFF; padding: 12px 34px; border-radius: 50px; font-family: var(--font-button); font-size: 1.25rem; transition: 0.3s; text-align: center;}
+    .btn-primary:hover { background: #6b1e1e; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(128, 37, 37, 0.2); }
+    
+    .hero-image { flex: 1; max-width: 50%; border-radius: var(--radius-sm); overflow: hidden; box-shadow: var(--shadow-soft); }
+    .hero-image img { width: 100%; height: auto; display: block; }
+
+    /* === АДАПТИВ ДЛЯ HERO POST === */
+    @media (max-width: 1000px) {
+        .hero-post { flex-direction: column-reverse; /* Картинка сверху, текст снизу */ padding: 30px 20px; gap: 20px; }
+        .hero-image { max-width: 100%; width: 100%; }
+        .hero-content { max-width: 100%; width: 100%; }
+        .hero-title { font-size: 2rem; }
+    }
+    
+    @media (max-width: 480px) {
+        .hero-post { padding: 20px 15px; border-radius: 16px; margin-bottom: 40px;}
+        .hero-title { font-size: 1.6rem; }
+        .hero-excerpt { font-size: 1rem; }
+        .btn-primary { width: 100%; /* Кнопка на всю ширину на мобилке */ }
+    }
+</style>

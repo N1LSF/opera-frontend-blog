@@ -1,0 +1,72 @@
+---
+const { searchItems } = Astro.props;
+---
+
+<div class="search-wrapper">
+    <svg class="search-icon" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <input type="text" id="searchInput" class="search-input" placeholder="Найти оперу, автора или рубрику..." autocomplete="off">
+    <ul id="searchResults" class="search-results-dropdown"></ul>
+</div>
+
+<style>
+    .search-wrapper { position: relative; margin-bottom: 50px; max-width: 600px; z-index: 10; }
+    .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #999; pointer-events: none; transition: 0.3s; }
+    .search-input { width: 100%; padding: 18px 24px 18px 55px; border: 2px solid transparent; border-radius: 50px; background: var(--bg-card); box-shadow: var(--shadow-soft); font-family: var(--font-body); font-size: 1.05rem; color: var(--text-main); outline: none; transition: all 0.3s ease; }
+    .search-input::placeholder { color: #aaa; }
+    .search-input:focus { border-color: var(--accent-primary); box-shadow: 0 10px 30px rgba(128, 37, 37, 0.1); }
+    .search-input:focus + .search-icon { color: var(--accent-primary); }
+    .search-results-dropdown { position: absolute; top: calc(100% + 10px); left: 0; right: 0; background: var(--bg-card); border-radius: var(--radius-sm); box-shadow: 0 15px 40px rgba(0,0,0,0.12); max-height: 350px; overflow-y: auto; display: none; padding: 8px 0; margin: 0; list-style: none; border: 1px solid rgba(0,0,0,0.05); }
+</style>
+
+<script is:inline define:vars={{ searchItems }}>
+    function initSearch() {
+        const input = document.getElementById('searchInput');
+        const resultsBox = document.getElementById('searchResults');
+
+        if (!input || !resultsBox) return;
+
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+
+        newInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (!query) { resultsBox.style.display = 'none'; return; }
+
+            const filteredPosts = searchItems.filter(item => {
+                const titleStr = (item.title || '').toLowerCase();
+                const authorStr = (item.author || '').toLowerCase();
+                if (query.length <= 2) {
+                    const checkWords = (str) => str.split(/[\s\-«»",.]+/).some(word => word.startsWith(query));
+                    return checkWords(titleStr) || checkWords(authorStr);
+                }
+                return titleStr.includes(query) || authorStr.includes(query);
+            });
+
+            if (filteredPosts.length > 0) {
+                resultsBox.innerHTML = filteredPosts.map(item => 
+                    `<li style="margin: 0; padding: 0;">
+                        <a href="/blog/${item.slug}/" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 12px 24px; color: #2C2C2C; text-decoration: none; border-left: 3px solid transparent; transition: background 0.2s;" onmouseover="this.style.background='#fdf8f8'" onmouseout="this.style.background='transparent'">
+                            <span style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</span>
+                            ${item.author ? `<span style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #555; background: #F0F0F0; padding: 4px 12px 4px 6px; border-radius: 50px; white-space: nowrap; flex-shrink: 0;">
+                                ${item.authorAvatar ? `<img src="${item.authorAvatar}" alt="" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover; display: block;">` : `👤`}
+                                ${item.author}
+                            </span>` : ''}
+                        </a>
+                    </li>`
+                ).join('');
+            } else {
+                resultsBox.innerHTML = '<li style="padding: 15px 24px; color: #999; font-style: italic;">Ничего не найдено 😔</li>';
+            }
+            resultsBox.style.display = 'block';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (resultsBox && !e.target.closest('.search-wrapper')) { resultsBox.style.display = 'none'; }
+        }, { once: true });
+    }
+    document.addEventListener('DOMContentLoaded', initSearch);
+    document.addEventListener('astro:page-load', initSearch);
+</script>

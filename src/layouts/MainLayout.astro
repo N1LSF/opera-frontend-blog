@@ -15,10 +15,6 @@ const currentPath = Astro.url.pathname;
     <ViewTransitions />
     
     <style is:global>
-            .submenu { padding-left: 20px; margin-top: -4px; margin-bottom: 8px; border-left: 1px solid rgba(0,0,0,0.05); margin-left: 16px; }
-        .submenu-link { display: block; padding: 6px 12px; font-size: 0.85rem; color: var(--text-muted); border-radius: 8px; transition: 0.2s; }
-        .submenu-link:hover { color: var(--accent-primary); background: rgba(0,0,0,0.02); }
-        .submenu-link.active { color: var(--accent-primary); font-weight: 600; }
         ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; opacity: 1 !important; }
 
         :root {

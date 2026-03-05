@@ -15,6 +15,10 @@ const currentPath = Astro.url.pathname;
     <ViewTransitions />
     
     <style is:global>
+            .submenu { padding-left: 20px; margin-top: -4px; margin-bottom: 8px; border-left: 1px solid rgba(0,0,0,0.05); margin-left: 16px; }
+        .submenu-link { display: block; padding: 6px 12px; font-size: 0.85rem; color: var(--text-muted); border-radius: 8px; transition: 0.2s; }
+        .submenu-link:hover { color: var(--accent-primary); background: rgba(0,0,0,0.02); }
+        .submenu-link.active { color: var(--accent-primary); font-weight: 600; }
         ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; opacity: 1 !important; }
 
         :root {
@@ -126,7 +130,7 @@ const currentPath = Astro.url.pathname;
 </div>
 
 <header class="mobile-header">
-    <a href="/" class="mobile-logo">Читая Оперу</a>
+    <a href="/" class="mobile-logo">Опера глазами читателя</a>
     <button class="hamburger" id="menu-btn" aria-label="Открыть меню">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
     </button>
@@ -141,7 +145,7 @@ const currentPath = Astro.url.pathname;
             <p class="slogan">Блог о либретто, смыслах и судьбах</p>
         </div>
         
-        <nav class="sidebar-nav-card">
+                <nav class="sidebar-nav-card">
             <div class="nav-group-title">Навигация</div>
             <ul>
                 <li><a href="/" class={`nav-link ${currentPath === '/' ? 'active' : ''}`}>Главная</a></li>
@@ -152,9 +156,23 @@ const currentPath = Astro.url.pathname;
             <ul>
                 <li><a href="/librettists/" class={`nav-link ${currentPath.startsWith('/librettists') ? 'active' : ''}`}>Либреттисты</a></li>
                 <li><a href="/opera-plots/" class={`nav-link ${currentPath.startsWith('/opera-plots') ? 'active' : ''}`}>Оперные сюжеты</a></li>
-                <li><a href="/history/" class={`nav-link ${currentPath.startsWith('/history') ? 'active' : ''}`}>История</a></li>
-                <li><a href="/censourship/" class={`nav-link ${currentPath.startsWith('/censourship') ? 'active' : ''}`}>Цензура</a></li>
-                <li><a href="/glossary/" class={`nav-link ${currentPath.startsWith('/glossary') ? 'active' : ''}`}>Глоссарий</a></li>
+                
+                <!-- Вложенное меню -->
+                <li class="has-submenu">
+                    <div class="nav-link submenu-trigger" style="cursor: default;">Не только сюжеты ▾</div>
+                    <ul class="submenu">
+                        <li><a href="/history/" class={`submenu-link ${currentPath.startsWith('/history') ? 'active' : ''}`}>История создания</a></li>
+                        <li><a href="/eternal-plots/" class={`submenu-link ${currentPath.startsWith('/eternal-plots') ? 'active' : ''}`}>Вечные сюжеты</a></li>
+                        <li><a href="/book-to-opera/" class={`submenu-link ${currentPath.startsWith('/book-to-opera') ? 'active' : ''}`}>Из книги в оперу</a></li>
+                        <li><a href="/censorship/" class={`submenu-link ${currentPath.startsWith('/censorship') ? 'active' : ''}`}>Цензура и скандалы</a></li>
+                        <li><a href="/detective/" class={`submenu-link ${currentPath.startsWith('/detective') ? 'active' : ''}`}>Оперный детектив</a></li>
+                        <li><a href="/librettology/" class={`submenu-link ${currentPath.startsWith('/librettology') ? 'active' : ''}`}>Либреттология</a></li>
+                        <li><a href="/opera-world/" class={`submenu-link ${currentPath.startsWith('/opera-world') ? 'active' : ''}`}>Оперный мир</a></li>
+                    </ul>
+                </li>
+                
+                <li><a href="/read/" class={`nav-link ${currentPath.startsWith('/read') ? 'active' : ''}`}>Что почитать</a></li>
+                <li><a href="/listen/" class={`nav-link ${currentPath.startsWith('/listen') ? 'active' : ''}`}>Что послушать</a></li>
             </ul>
         </nav>
     </aside>

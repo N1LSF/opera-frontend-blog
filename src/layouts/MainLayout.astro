@@ -102,28 +102,43 @@ const currentPath = Astro.url.pathname;
             *, *::before, *::after { cursor: none !important; }
             
             .custom-cursor {
-                position: fixed; width: 10px; height: 10px; background: var(--accent-primary);
-                border-radius: 50%; pointer-events: none; z-index: 999999;
+                position: fixed; 
+                width: 10px; 
+                height: 10px; 
+                background: var(--accent-primary);
+                border-radius: 50%; 
+                pointer-events: none; 
+                z-index: 999999;
                 transform: translate(-50%, -50%);
-                transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), height 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, opacity 0.3s ease;
-                mix-blend-mode: difference; will-change: left, top;
+                transition: width 0.2s ease-out, 
+                            height 0.2s ease-out, 
+                            background 0.2s ease, 
+                            border 0.2s ease,
+                            opacity 0.3s ease;
+                will-change: left, top, width, height;
+                border: 1px solid transparent;
             }
 
-            .custom-cursor.hovered { width: 60px; height: 60px; background: #ffffff; }
+            .custom-cursor.hovered { 
+                width: 36px; 
+                height: 36px; 
+                background: rgba(128, 37, 37, 0.1); 
+                border: 1px solid rgba(128, 37, 37, 0.5);
+            }
         }
-
-        /* === КАСТОМНЫЕ СКРОЛЛБАРЫ === */
-        .sidebar-nav-card { scrollbar-width: thin; scrollbar-color: rgba(128, 37, 37, 0.2) transparent; }
-        .sidebar-nav-card::-webkit-scrollbar { width: 3px; }
+        
+        /* === КАСТОМНЫЕ СКРОЛЛБАРЫ (ЯРКИЕ) === */
+        .sidebar-nav-card { scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent; }
+        .sidebar-nav-card::-webkit-scrollbar { width: 4px; }
         .sidebar-nav-card::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-nav-card::-webkit-scrollbar-thumb { background: rgba(128, 37, 37, 0.2); border-radius: 10px; }
-        .sidebar-nav-card::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+        .sidebar-nav-card::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 10px; }
+        .sidebar-nav-card::-webkit-scrollbar-thumb:hover { background: #601818; }
 
-        html { scrollbar-width: thin; scrollbar-color: rgba(128, 37, 37, 0.2) transparent; }
-        html::-webkit-scrollbar { width: 4px; }
+        html { scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent; }
+        html::-webkit-scrollbar { width: 6px; }
         html::-webkit-scrollbar-track { background: transparent; }
-        html::-webkit-scrollbar-thumb { background: rgba(128, 37, 37, 0.2); border-radius: 10px; }
-        html::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+        html::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 10px; }
+        html::-webkit-scrollbar-thumb:hover { background: #601818; }
 
         /* === АДАПТИВ === */
         @media (max-width: 1000px) {
@@ -152,7 +167,7 @@ const currentPath = Astro.url.pathname;
 </div>
 
 <header class="mobile-header">
-    <a href="/" class="mobile-logo">Опера глазами читателя</a>
+    <a href="/" class="mobile-logo">Читая Оперу</a>
     <button class="hamburger" id="menu-btn" aria-label="Открыть меню">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
     </button>

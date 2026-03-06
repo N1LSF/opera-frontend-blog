@@ -30,13 +30,11 @@ const currentPath = Astro.url.pathname;
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ul, ol, li { list-style: none !important; } 
 
-        /* ЖЕЛЕЗНАЯ БЛОКИРОВКА ГОРИЗОНТАЛЬНОГО СКРОЛЛА */
         html, body { overflow-x: hidden; width: 100%; }
         
         body { background-color: var(--bg-body); color: var(--text-main); font-family: var(--font-body); line-height: 1.6; min-height: 100vh; }
         a { text-decoration: none; color: inherit; transition: 0.3s; }
 
-        /* ОСНОВНАЯ СЕТКА */
         .app-container { 
             display: grid; 
             grid-template-columns: 280px 1fr;
@@ -46,7 +44,6 @@ const currentPath = Astro.url.pathname;
             gap: 40px;
         }
 
-        /* САЙДБАР ДЛЯ ДЕСКТОПА */
         .sidebar { 
             position: sticky; top: 24px; height: calc(100vh - 48px); 
             display: flex; flex-direction: column; gap: 16px;
@@ -54,7 +51,6 @@ const currentPath = Astro.url.pathname;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* МОБИЛЬНАЯ ШАПКА (Скрыта на ПК) */
         .mobile-header {
             display: none;
             position: sticky; top: 0; z-index: 990;
@@ -66,13 +62,11 @@ const currentPath = Astro.url.pathname;
         .mobile-logo { font-family: var(--font-head); font-weight: 700; color: var(--accent-primary); font-size: 1.2rem; text-transform: uppercase; }
         .hamburger { background: none; border: none; color: var(--accent-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; }
         
-        /* ЗАТЕМНЕНИЕ ФОНА ПРИ ОТКРЫТОМ МЕНЮ НА МОБИЛКЕ */
         .sidebar-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.5); z-index: 998; opacity: 0; transition: opacity 0.3s;
         }
 
-        /* СТИЛИ КАРТОЧЕК МЕНЮ */
         .sidebar-brand-card { background: var(--bg-card); padding: 30px 20px; border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); text-align: center; }
         .logo { font-family: var(--font-head); font-weight: 700; font-size: 1.4rem; color: var(--accent-primary); line-height: 1.25; margin-bottom: 8px; display: block; text-transform: uppercase; }
         .slogan { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
@@ -84,7 +78,7 @@ const currentPath = Astro.url.pathname;
 
         main { background: transparent; padding-top: 24px; min-width: 0; }
 
-        /* ИСПРАВЛЕННАЯ ШТОРКА */
+        /* ШТОРКА */
         .page-curtain { 
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
             background-color: var(--accent-primary); z-index: 999999; 
@@ -95,38 +89,8 @@ const currentPath = Astro.url.pathname;
         .page-curtain.visible { visibility: visible; }
         .curtain-text { font-family: var(--font-head); font-size: 3rem; font-weight: 700; color: #FFFFFF; text-align: center; opacity: 0; transition: opacity 0.3s ease; text-transform: uppercase; }
         .page-curtain.visible .curtain-text { opacity: 1; }
-
-        /* === КАСТОМНЫЙ КУРСОР === */
-        @media (pointer: fine) {
-            *, *::before, *::after { cursor: none !important; }
-            
-            .custom-cursor {
-                position: fixed; 
-                width: 10px; 
-                height: 10px; 
-                background: var(--accent-primary);
-                border-radius: 50%; 
-                pointer-events: none; 
-                z-index: 999999;
-                transform: translate(-50%, -50%);
-                transition: width 0.2s ease-out, 
-                            height 0.2s ease-out, 
-                            background 0.2s ease, 
-                            border 0.2s ease,
-                            opacity 0.3s ease;
-                will-change: left, top, width, height;
-                border: 1px solid transparent;
-            }
-
-            .custom-cursor.hovered { 
-                width: 36px; 
-                height: 36px; 
-                background: rgba(128, 37, 37, 0.1); 
-                border: 1px solid rgba(128, 37, 37, 0.5);
-            }
-        }
         
-        /* === КАСТОМНЫЕ СКРОЛЛБАРЫ (ЯРКИЕ) === */
+        /* СКРОЛЛБАРЫ */
         .sidebar-nav-card { scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent; }
         .sidebar-nav-card::-webkit-scrollbar { width: 4px; }
         .sidebar-nav-card::-webkit-scrollbar-track { background: transparent; }
@@ -139,7 +103,7 @@ const currentPath = Astro.url.pathname;
         html::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 10px; }
         html::-webkit-scrollbar-thumb:hover { background: #601818; }
 
-        /* === АДАПТИВ === */
+        /* АДАПТИВ */
         @media (max-width: 1000px) {
             .app-container { grid-template-columns: 1fr; gap: 0; }
             main { padding: 20px; padding-top: 0; }
@@ -157,9 +121,6 @@ const currentPath = Astro.url.pathname;
     </style>
 </head>
 <body>
-
-<!-- HTML КУРСОР ТУТ (внутри body, а не в стилях) -->
-<div class="custom-cursor" id="custom-cursor"></div>
 
 <div id="transition-curtain" class="page-curtain" transition:persist>
     <div class="curtain-text">ОПЕРА ГЛАЗАМИ ЧИТАТЕЛЯ</div>
@@ -222,9 +183,8 @@ const currentPath = Astro.url.pathname;
     document.addEventListener('astro:after-swap', () => { const c = document.getElementById('transition-curtain'); if(!c) return; setTimeout(() => { c.style.transition=`transform ${ANIM_SPEED}ms ${EASING}`; c.style.transform='translateY(-100%)'; setTimeout(resetCurtain, ANIM_SPEED); }, 100); });
     resetCurtain();
 
-    // МОБИЛЬНОЕ МЕНЮ И КУРСОР
+    // МОБИЛЬНОЕ МЕНЮ
     function initLayoutScripts() {
-        // Меню
         const btn = document.getElementById('menu-btn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
@@ -235,6 +195,7 @@ const currentPath = Astro.url.pathname;
             overlay.addEventListener('click', closeMenu);
             sidebar.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', closeMenu));
         }
+    }
 
     document.addEventListener('DOMContentLoaded', initLayoutScripts);
     document.addEventListener('astro:page-load', initLayoutScripts);

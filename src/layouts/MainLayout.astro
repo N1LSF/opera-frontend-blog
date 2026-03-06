@@ -1,6 +1,5 @@
 ---
 import { ViewTransitions } from 'astro:transitions';
-import DesignCustomizer from '../components/DesignCustomizer.astro';
 const { title } = Astro.props;
 const currentPath = Astro.url.pathname;
 ---
@@ -254,6 +253,5 @@ const currentPath = Astro.url.pathname;
     document.addEventListener('DOMContentLoaded', initLayoutScripts);
     document.addEventListener('astro:page-load', initLayoutScripts);
 </script>
-<DesignCustomizer />
 </body>
 </html>

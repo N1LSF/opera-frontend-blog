@@ -1,6 +1,8 @@
 meta:
-  environment: nodejs # Возвращаем эту строку, убираем toolchain
-  version: 20 # Указываем версию Node.js
+  environment: docker # Общее окружение - Docker-контейнер
+  toolchain:
+    name: nodejs     # А внутри Docker-контейнера используется Node.js
+    version: 20
 
 build:
   cmd: npm install && npm run build

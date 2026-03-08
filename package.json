@@ -5,15 +5,21 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "preview": "npm run build && wrangler dev",
+    "astro": "astro",
+    "deploy": "npm run build && wrangler deploy",
+    "cf-typegen": "wrangler types"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.6.12",
     "@sanity/block-content-to-html": "^2.0.0",
     "@sanity/client": "^7.16.0",
     "@sanity/image-url": "^2.0.3",
     "astro": "^5.17.1",
     "astro-portabletext": "^0.13.0",
     "serve": "^14.2.6"
+  },
+  "devDependencies": {
+    "wrangler": "^4.71.0"
   }
 }

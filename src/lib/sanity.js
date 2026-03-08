@@ -1,12 +1,12 @@
 // src/lib/sanity.js
-import {createClient} from '@sanity/client';
+import { createClient } from '@sanity/client';
 import imageUrlBuilder from '@sanity/image-url';
 
 export const sanityClient = createClient({
-  projectId: 'ipigbfxk', // Твой Project ID уже вставлен
+  projectId: 'ipigbfxk',
   dataset: 'opera',
-  apiVersion: '2026-03-04', // Твой API Version
-  useCdn: true,
+  apiVersion: '2026-03-04',
+  useCdn: false,  // <-- БЫЛО true, СТАЛО false
 });
 
 const builder = imageUrlBuilder(sanityClient);

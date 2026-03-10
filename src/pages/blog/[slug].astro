@@ -184,6 +184,28 @@ if (!post) {
 </style>
 
 <style is:global>
+.editorial-content {
+    font-family: var(--font-body);
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: #333333;
+    position: relative;
+}
+
+.editorial-content::before {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-20deg);
+    width: 350px;
+    height: 350px;
+    background: url('/favicon.svg') center / contain no-repeat;
+    opacity: 0.035;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+}
     .editorial-content {
         font-family: var(--font-body);
         font-size: 1.15rem; 

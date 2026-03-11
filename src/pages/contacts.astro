@@ -1,0 +1,109 @@
+---
+import { sanityClient } from '../lib/sanity';
+import MainLayout from '../layouts/MainLayout.astro';
+
+const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
+  contactEmail,
+  contactText,
+  socialLinks
+}`);
+---
+
+<MainLayout title="Контакты">
+    <main class="content">
+        <h1 class="page-title">Контакты</h1>
+
+        <div class="contacts-card">
+            {settings?.contactText && (
+                <p class="contact-text">{settings.contactText}</p>
+            )}
+
+            {settings?.contactEmail && (
+                <a href={`mailto:${settings.contactEmail}`} class="contact-email">
+                    {settings.contactEmail}
+                </a>
+            )}
+
+            {settings?.socialLinks && settings.socialLinks.length > 0 && (
+                <div class="social-links">
+                    {settings.socialLinks.map((s: any) => (
+                        <a href={s.url} target="_blank" rel="noopener noreferrer" class="social-link">
+                            {s.platform}
+                        </a>
+                    ))}
+                </div>
+            )}
+        </div>
+    </main>
+</MainLayout>
+
+<style>
+    .content { 
+        padding: 40px 60px; 
+        max-width: 860px; 
+        margin: 0 auto; 
+    }
+
+    .page-title { 
+        font-family: var(--font-head); 
+        font-size: 2.8rem; 
+        margin-bottom: 40px; 
+        text-align: center; 
+    }
+
+    .contacts-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        padding: 50px;
+        box-shadow: var(--shadow-soft);
+        text-align: center;
+    }
+
+    .contact-text {
+        font-family: var(--font-body);
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: var(--text-main);
+        margin-bottom: 30px;
+    }
+
+    .contact-email {
+        display: inline-block;
+        font-family: var(--font-head);
+        font-size: 1.4rem;
+        color: var(--accent-primary);
+        border-bottom: 1px solid rgba(128, 37, 37, 0.3);
+        margin-bottom: 30px;
+    }
+    .contact-email:hover {
+        border-bottom-color: var(--accent-primary);
+    }
+
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .social-link {
+        padding: 10px 24px;
+        border-radius: var(--radius-sm);
+        background: var(--accent-light);
+        color: var(--accent-primary);
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+    .social-link:hover {
+        background: var(--accent-primary);
+        color: #fff;
+    }
+
+    @media (max-width: 768px) {
+        .content { padding: 20px 15px; }
+        .page-title { font-size: 2rem; }
+        .contacts-card { padding: 30px 20px; }
+        .contact-email { font-size: 1.1rem; }
+    }
+</style>

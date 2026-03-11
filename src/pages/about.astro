@@ -90,5 +90,20 @@ const about = await sanityClient.fetch(`*[_type == "aboutPage"][0]{
             margin-left: 15px; /* Придвигаем список чуть левее */
         }
         .about-photo { width: 100%; height: 100%; object-fit: cover; }
+        .about-image { 
+            height: 300px; 
+            background: var(--accent-light); 
+            position: relative; 
+            overflow: hidden; 
+        }
+
+        .about-photo { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+        @media (max-width: 768px) {
+            .about-image { height: 200px; }
+        }
     }
 </style>

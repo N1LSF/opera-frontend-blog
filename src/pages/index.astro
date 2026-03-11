@@ -2,7 +2,13 @@
 import { sanityClient, urlFor } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro';
 
-// УЛУЧШЕННЫЙ ЗАПРОС: Теперь мы забираем еще и Автора, и Композитора
+// Настройки главной (цитата)
+const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
+  quoteText,
+  quoteAuthor
+}`);
+
+// Статьи
 const allPosts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**"))] | order(publishedAt desc){
   title,
   slug,
@@ -16,7 +22,6 @@ const allPosts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("d
 
 const heroPost = allPosts[0];
 ---
-
 <MainLayout title="Главная">
     <main class="content">
 
@@ -60,12 +65,11 @@ const heroPost = allPosts[0];
                     <input type="text" id="mainSearch" class="main-search-input" placeholder="Найти оперу, композитора, рубрику..." autocomplete="off">
                 </div>
 
-                <div class="collapsible-wrapper">
-                    <div class="widget quote-widget">
-                        <svg class="quote-icon" width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
-                        <p class="quote-text">«Опера — это когда парень получает удар кинжалом в спину, но вместо того, чтобы истекать кровью, он поет».</p>
-                        <span class="quote-author">— Эдуард Элгар</span>
-                    </div>
+                <div class="widget quote-widget">
+                    <svg class="quote-icon" width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+                    <p class="quote-text">{settings?.quoteText || '«Опера — это когда парень получает удар кинжалом в спину, но вместо того, чтобы истекать кровью, он поет».'}</p>
+                    <span class="quote-author">{settings?.quoteAuthor || '— Эдуард Элгар'}</span>
+                </div>
 
                     <div class="widget tags-widget">
                         <h3>Популярное</h3>

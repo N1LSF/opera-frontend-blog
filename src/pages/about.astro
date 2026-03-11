@@ -1,32 +1,35 @@
 ---
+import { sanityClient, urlFor } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro';
+import { PortableText } from 'astro-portabletext';
+
+const about = await sanityClient.fetch(`*[_type == "aboutPage"][0]{
+  pageTitle,
+  photo,
+  body
+}`);
 ---
 
 <MainLayout title="О блоге">
     <main class="content">
         <div class="about-container">
-            <h1 class="page-title">О проекте «Читая Оперу»</h1>
+            <h1 class="page-title">{about?.pageTitle || 'О проекте «Читая Оперу»'}</h1>
             
             <div class="about-card">
                 <div class="about-image">
-                    <!-- Заглушка для фото автора, потом Наталья сможет вставить свое -->
-                    <div class="image-placeholder"></div>
+                    {about?.photo ? (
+                        <img src={urlFor(about.photo).width(1000).height(400).auto('format').url()} alt="Фото автора" class="about-photo" />
+                    ) : (
+                        <div class="image-placeholder"></div>
+                    )}
                 </div>
                 
                 <div class="about-text">
-                    <p class="lead-text">Добро пожаловать в блог, где опера перестает быть скучной классикой и превращается в захватывающий сериал.</p>
-                    
-                    <p>Идея этого проекта родилась из желания показать, что скрывается за красивыми декорациями и сложными вокальными партиями. Либретто — это не просто текст для пения. Это судьбы, интриги, скандалы с цензурой и тайные послания авторов.</p>
-                    
-                    <p><strong>Здесь вы найдете:</strong></p>
-                    <ul class="about-list">
-                        <li>Разборы оперных сюжетов (с фильтрами по странам и эпохам);</li>
-                        <li>Биографии гениальных, но часто забытых либреттистов;</li>
-                        <li>Истории создания шедевров и конфликты с властью;</li>
-                        <li>Удобный глоссарий для тех, кто только начинает свой путь в мир оперы.</li>
-                    </ul>
-
-                    <p>Читайте, изучайте и открывайте для себя оперу заново!</p>
+                    {about?.body ? (
+                        <PortableText value={about.body} />
+                    ) : (
+                        <p>Текст скоро появится...</p>
+                    )}
                 </div>
             </div>
         </div>
@@ -84,5 +87,6 @@ import MainLayout from '../layouts/MainLayout.astro';
         .about-list {
             margin-left: 15px; /* Придвигаем список чуть левее */
         }
+        .about-photo { width: 100%; height: 100%; object-fit: cover; }
     }
 </style>

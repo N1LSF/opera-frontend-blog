@@ -223,16 +223,16 @@ if (!post) {
     .editorial-content img { border-radius: 16px; margin: 2.5em 0; width: 100%; height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
 
     /* БУКВИЦА — ВЕЗДЕ */
-    .editorial-content > p:first-child::first-letter {
-        font-family: var(--font-head);
-        font-size: 3.5em;
-        float: left;
-        line-height: 0.8;
-        margin-right: 8px;
-        margin-top: 5px;
-        color: var(--accent-primary);
-        font-weight: 400;
-    }
+.editorial-content p:first-of-type::first-letter {
+    font-family: var(--font-head);
+    font-size: 3.5em;
+    float: left;
+    line-height: 0.8;
+    margin-right: 8px;
+    margin-top: 5px;
+    color: var(--accent-primary) !important;
+    font-weight: 400;
+}
 
     @media (max-width: 768px) {
         .editorial-content::before {

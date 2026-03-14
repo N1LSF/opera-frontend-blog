@@ -230,8 +230,7 @@ const heroPost = allPosts[0];
     
     .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
     
-    .hero-duplicate { display: none !important; }
-    .grid-searching .hero-duplicate { display: flex !important; }
+    .hero-duplicate { display: none; }
 
     .article-card { background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-soft, 0 4px 20px rgba(0,0,0,0.03)); transition: 0.3s; display: flex; flex-direction: column; }
     .article-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); }
@@ -279,43 +278,43 @@ const heroPost = allPosts[0];
 
         if (!searchInput || !dashboard || !mainGrid) return;
 
-        // Снимаем старый обработчик: клонируем инпут
         const freshInput = searchInput.cloneNode(true) as HTMLInputElement;
         searchInput.parentNode!.replaceChild(freshInput, searchInput);
 
         freshInput.addEventListener('input', () => {
             const query = freshInput.value.trim().toLowerCase();
             const cards = mainGrid.querySelectorAll('.article-card');
-
             const isSearching = query.length > 0;
 
-            // === UI: скрываем/показываем hero и виджеты ===
+            // === UI ===
             if (isSearching) {
                 dashboard.classList.add('is-searching');
-                mainGrid.classList.add('grid-searching');
                 if (sectionTitle) sectionTitle.classList.add('hidden');
                 if (heroColumn) heroColumn.style.display = 'none';
                 if (quoteWidget) quoteWidget.style.display = 'none';
                 if (tagsWidget) tagsWidget.style.display = 'none';
             } else {
                 dashboard.classList.remove('is-searching');
-                mainGrid.classList.remove('grid-searching');
                 if (sectionTitle) sectionTitle.classList.remove('hidden');
                 if (heroColumn) heroColumn.style.display = '';
                 if (quoteWidget) quoteWidget.style.display = '';
                 if (tagsWidget) tagsWidget.style.display = '';
             }
 
-            // === Фильтрация карточек ===
+            // === Фильтрация ===
             if (!isSearching) {
                 cards.forEach((card) => {
-                    (card as HTMLElement).style.display = '';
+                    const el = card as HTMLElement;
+                    if (el.classList.contains('hero-duplicate')) {
+                        el.style.display = 'none';
+                    } else {
+                        el.style.display = '';
+                    }
                 });
                 if (noResultsMsg) noResultsMsg.style.display = 'none';
                 return;
             }
 
-            // Разбиваем запрос на слова — каждое должно матчиться
             const queryWords = query.split(/\s+/).filter(w => w.length > 0);
 
             let visibleCount = 0;

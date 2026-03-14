@@ -8,13 +8,12 @@ const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
   quoteAuthor
 }`);
 
-// Статьи
 const allPosts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**"))] | order(publishedAt desc){
   title,
   slug,
   publishedAt,
   excerpt,
-  "categoryName": categories[0]->title,
+  "categoryName": category->title,
   "authorName": author->name,
   "composerName": composer->name,
   mainImage
@@ -28,7 +27,7 @@ const heroPost = allPosts[0];
         <!-- ЖУРНАЛЬНЫЙ ДАШБОРД -->
         <div class="editorial-dashboard" id="dashboard">
             
-            <div class="hero-column">
+            <div class="hero-column" id="heroColumn">
                 {heroPost && (
                     <article class="hero-card">
                         <a href={`/blog/${heroPost.slug?.current || '#'}/`} class="hero-link">
@@ -61,7 +60,6 @@ const heroPost = allPosts[0];
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    <!-- Инпут поиска -->
                     <input type="text" id="mainSearch" class="main-search-input" placeholder="Найти оперу, композитора, рубрику..." autocomplete="off">
                 </div>
 
@@ -91,7 +89,6 @@ const heroPost = allPosts[0];
 
         <div class="articles-grid" id="mainGrid">
             {allPosts.map((post, index) => (
-                <!-- ВАЖНО: Мы прячем данные об авторах и композиторах в data-атрибуты, чтобы скрипт мог их прочитать -->
                 <article 
                     class={`article-card ${index === 0 ? 'hero-duplicate' : ''}`}
                     data-title={post.title}
@@ -271,59 +268,80 @@ const heroPost = allPosts[0];
 
 <script>
     function initMainSearch() {
-        const searchInput = document.getElementById('mainSearch');
+        const searchInput = document.getElementById('mainSearch') as HTMLInputElement;
         const dashboard = document.getElementById('dashboard');
+        const heroColumn = document.getElementById('heroColumn');
         const mainGrid = document.getElementById('mainGrid');
         const sectionTitle = document.getElementById('sectionTitle');
-        const cards = document.querySelectorAll('.article-card');
         const noResultsMsg = document.getElementById('noResults');
+        const quoteWidget = document.querySelector('.quote-widget') as HTMLElement;
+        const tagsWidget = document.querySelector('.tags-widget') as HTMLElement;
 
-        if (searchInput && dashboard && mainGrid) {
-            searchInput.addEventListener('input', (e) => {
-                const query = (e.target as HTMLInputElement).value.trim().toLowerCase();
-                
-                // Экранируем спецсимволы
-                const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                
-                // Ищем совпадение в НАЧАЛЕ слова
-                const searchRegex = new RegExp('(^|[\\s"«\'(>\\-])' + escapeRegExp(query), 'i');
+        if (!searchInput || !dashboard || !mainGrid) return;
 
-                // Анимация интерфейса
-                if(query.length > 0) {
-                    dashboard.classList.add('is-searching');
-                    mainGrid.classList.add('grid-searching');
-                    if(sectionTitle) sectionTitle.classList.add('hidden');
-                } else {
-                    dashboard.classList.remove('is-searching');
-                    mainGrid.classList.remove('grid-searching');
-                    if(sectionTitle) sectionTitle.classList.remove('hidden');
-                }
+        // Снимаем старый обработчик: клонируем инпут
+        const freshInput = searchInput.cloneNode(true) as HTMLInputElement;
+        searchInput.parentNode!.replaceChild(freshInput, searchInput);
 
-                // УМНАЯ ФИЛЬТРАЦИЯ (поиск по скрытым данным!)
-                let visibleCount = 0;
-                cards.forEach(card => {
-                    // Собираем все данные карточки в одну строку
-                    const title = (card as HTMLElement).dataset.title || '';
-                    const author = (card as HTMLElement).dataset.author || '';
-                    const composer = (card as HTMLElement).dataset.composer || '';
-                    const category = (card as HTMLElement).dataset.category || '';
-                    
-                    const fullTextToSearch = `${title} ${author} ${composer} ${category}`;
+        freshInput.addEventListener('input', () => {
+            const query = freshInput.value.trim().toLowerCase();
+            const cards = mainGrid.querySelectorAll('.article-card');
 
-                    // Проверяем строку на совпадение
-                    if (query.length === 0 || searchRegex.test(fullTextToSearch)) {
-                        (card as HTMLElement).style.display = 'flex';
-                        visibleCount++;
-                    } else {
-                        (card as HTMLElement).style.display = 'none';
-                    }
+            const isSearching = query.length > 0;
+
+            // === UI: скрываем/показываем hero и виджеты ===
+            if (isSearching) {
+                dashboard.classList.add('is-searching');
+                mainGrid.classList.add('grid-searching');
+                if (sectionTitle) sectionTitle.classList.add('hidden');
+                if (heroColumn) heroColumn.style.display = 'none';
+                if (quoteWidget) quoteWidget.style.display = 'none';
+                if (tagsWidget) tagsWidget.style.display = 'none';
+            } else {
+                dashboard.classList.remove('is-searching');
+                mainGrid.classList.remove('grid-searching');
+                if (sectionTitle) sectionTitle.classList.remove('hidden');
+                if (heroColumn) heroColumn.style.display = '';
+                if (quoteWidget) quoteWidget.style.display = '';
+                if (tagsWidget) tagsWidget.style.display = '';
+            }
+
+            // === Фильтрация карточек ===
+            if (!isSearching) {
+                cards.forEach((card) => {
+                    (card as HTMLElement).style.display = '';
                 });
+                if (noResultsMsg) noResultsMsg.style.display = 'none';
+                return;
+            }
 
-                if (noResultsMsg) {
-                    noResultsMsg.style.display = visibleCount === 0 && query.length > 0 ? 'block' : 'none';
+            // Разбиваем запрос на слова — каждое должно матчиться
+            const queryWords = query.split(/\s+/).filter(w => w.length > 0);
+
+            let visibleCount = 0;
+            cards.forEach((card) => {
+                const el = card as HTMLElement;
+                const haystack = [
+                    el.dataset.title || '',
+                    el.dataset.author || '',
+                    el.dataset.composer || '',
+                    el.dataset.category || ''
+                ].join(' ').toLowerCase();
+
+                const matches = queryWords.every(word => haystack.includes(word));
+
+                if (matches) {
+                    el.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    el.style.display = 'none';
                 }
             });
-        }
+
+            if (noResultsMsg) {
+                noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        });
     }
 
     initMainSearch();

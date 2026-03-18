@@ -6,17 +6,18 @@ const term = markDef.term || '';
 const definition = markDef.definition || '';
 ---
 
-<span class="glossary-tooltip" data-tooltip={definition}>
-    <slot />
-</span>
+<span class="glossary-tooltip" data-tooltip={definition}><span class="glossary-tooltip-inner"><slot /></span></span>
 
 <style>
     .glossary-tooltip {
-        color: var(--accent-primary);
-        border-bottom: 1px dashed var(--accent-primary);
         cursor: help;
         position: relative;
         display: inline;
+    }
+
+    .glossary-tooltip-inner {
+        color: var(--accent-primary);
+        border-bottom: 1px dashed var(--accent-primary);
     }
 
     .glossary-tooltip::after {
@@ -70,10 +71,8 @@ const definition = markDef.definition || '';
     @media (max-width: 768px) {
         .glossary-tooltip::after {
             position: fixed;
-            bottom: auto;
-            top: auto;
-            left: 50%;
             bottom: 20px;
+            left: 50%;
             transform: translateX(-50%);
             max-width: calc(100vw - 40px);
             width: calc(100vw - 40px);

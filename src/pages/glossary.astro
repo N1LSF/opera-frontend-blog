@@ -13,7 +13,6 @@ const terms = await sanityClient.fetch(`
   }
 `);
 
-// Группируем по первой букве
 const grouped: Record<string, typeof terms> = {};
 
 terms.forEach((t: any) => {
@@ -24,288 +23,433 @@ terms.forEach((t: any) => {
 
 const letters = Object.keys(grouped).sort();
 
-// Иконки по типу
-const typeLabels: Record<string, string> = {
-  term: '📖',
-  librettist: '✍️',
-  opera: '🎭',
+const typeConfig: Record<string, { label: string }> = {
+  term:       { label: 'Термин' },
+  librettist: { label: 'Либреттист' },
+  opera:      { label: 'Опера' },
 };
 ---
 
 <MainLayout title="Глоссарий">
-  <div class="glossary-page">
+  <section class="glossary-page">
 
+    <!-- Заголовок -->
     <header class="glossary-header">
+      <p class="glossary-overline">Справочник</p>
       <h1 class="glossary-title">Глоссарий</h1>
-      <p class="glossary-subtitle">Термины, либреттисты и оперы — всё в одном месте</p>
+      <p class="glossary-desc">Термины, либреттисты и оперы — кратко и по существу</p>
     </header>
 
+    <!-- Фильтры -->
+    <div class="glossary-controls">
+      <div class="glossary-filters" role="tablist">
+        <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">Все</button>
+        <button class="filter-btn" data-filter="term" role="tab" aria-selected="false">Термины</button>
+        <button class="filter-btn" data-filter="librettist" role="tab" aria-selected="false">Либреттисты</button>
+        <button class="filter-btn" data-filter="opera" role="tab" aria-selected="false">Оперы</button>
+      </div>
+    </div>
+
     <!-- Алфавитная навигация -->
-    <nav class="glossary-nav">
+    <nav class="glossary-alphabet" aria-label="Алфавитная навигация">
       {letters.map(letter => (
-        <a href={`#letter-${letter}`} class="glossary-nav-letter">{letter}</a>
+        <a href={`#letter-${letter}`} class="alphabet-link">{letter}</a>
       ))}
     </nav>
 
-    <!-- Фильтр по типу -->
-    <div class="glossary-filters">
-      <button class="filter-btn active" data-filter="all">Все</button>
-      <button class="filter-btn" data-filter="term">📖 Термины</button>
-      <button class="filter-btn" data-filter="librettist">✍️ Либреттисты</button>
-      <button class="filter-btn" data-filter="opera">🎭 Оперы</button>
-    </div>
-
-    <!-- Список терминов -->
-    <div class="glossary-content">
+    <!-- Контент -->
+    <div class="glossary-body">
       {letters.map(letter => (
         <section class="glossary-section" id={`letter-${letter}`}>
-          <div class="glossary-letter-heading">{letter}</div>
-          <div class="glossary-cards">
+          <div class="section-letter-row">
+            <span class="section-letter">{letter}</span>
+            <span class="section-letter-line"></span>
+          </div>
+          <dl class="glossary-list">
             {grouped[letter].map((item: any) => (
-              <div class={`glossary-card`} data-type={item.termType}>
-                <div class="glossary-card-header">
-                  <span class="glossary-card-icon">{typeLabels[item.termType] || '📖'}</span>
+              <div class="glossary-entry" data-type={item.termType}>
+                <dt class="entry-term">
                   {item.linkedPostSlug ? (
-                    <a href={`/posts/${item.linkedPostSlug}`} class="glossary-card-title glossary-card-link">
+                    <a href={`/posts/${item.linkedPostSlug}`} class="entry-link">
                       {item.term}
+                      <svg class="entry-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="7" y1="17" x2="17" y2="7"></line>
+                        <polyline points="7 7 17 7 17 17"></polyline>
+                      </svg>
                     </a>
                   ) : (
-                    <h3 class="glossary-card-title">{item.term}</h3>
+                    <span>{item.term}</span>
                   )}
-                </div>
-                <p class="glossary-card-definition">{item.definition}</p>
-                {item.linkedPostSlug && (
-                  <a href={`/posts/${item.linkedPostSlug}`} class="glossary-card-readmore">
-                    Читать подробнее →
-                  </a>
-                )}
+                  <span class="entry-badge">{typeConfig[item.termType]?.label || 'Термин'}</span>
+                </dt>
+                <dd class="entry-definition">{item.definition}</dd>
               </div>
             ))}
-          </div>
+          </dl>
         </section>
       ))}
     </div>
 
-  </div>
+    <!-- Пустое состояние фильтра -->
+    <div class="glossary-empty" id="glossaryEmpty" style="display: none;">
+      <p class="empty-text">В этой категории пока нет записей</p>
+    </div>
+
+  </section>
 </MainLayout>
 
 <style>
+  /* ═══════════════════════════════════════
+     LAYOUT — 8px grid, max-width 760px
+     ═══════════════════════════════════════ */
   .glossary-page {
-    max-width: 860px;
+    max-width: 760px;
     margin: 0 auto;
-    padding: 0 20px 100px;
+    padding: 0 24px 96px;
   }
 
+  /* ═══════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════ */
   .glossary-header {
     text-align: center;
-    margin-bottom: 50px;
+    margin-bottom: 48px;
+  }
+
+  .glossary-overline {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: var(--accent-primary);
+    margin-bottom: 12px;
   }
 
   .glossary-title {
     font-family: var(--font-head);
-    font-size: 3.5rem;
+    font-size: 3rem;
     font-weight: 400;
     color: var(--text-main);
-    margin-bottom: 12px;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    margin-bottom: 16px;
   }
 
-  .glossary-subtitle {
+  .glossary-desc {
     font-family: var(--font-body);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: var(--text-muted);
+    line-height: 1.5;
   }
 
-  /* Алфавитная навигация */
-  .glossary-nav {
+  /* ═══════════════════════════════════════
+     FILTERS — pill buttons, border style
+     ═══════════════════════════════════════ */
+  .glossary-controls {
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
-    gap: 6px;
-    margin-bottom: 30px;
+    margin-bottom: 32px;
   }
 
-  .glossary-nav-letter {
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    font-family: var(--font-head);
-    font-size: 1rem;
-    color: var(--text-main);
-    background: rgba(128, 37, 37, 0.05);
-    text-decoration: none;
-    transition: all 0.2s ease;
-  }
-
-  .glossary-nav-letter:hover {
-    background: var(--accent-primary);
-    color: #fff;
-  }
-
-  /* Фильтры */
   .glossary-filters {
     display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 50px;
+    gap: 8px;
+    padding: 4px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
   }
 
   .filter-btn {
     padding: 8px 20px;
-    border: 1.5px solid rgba(128, 37, 37, 0.2);
-    border-radius: 100px;
+    border: none;
+    border-radius: 8px;
     background: transparent;
     font-family: var(--font-body);
-    font-size: 0.9rem;
-    color: var(--text-main);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
     cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .filter-btn:hover {
+    color: var(--text-main);
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  .filter-btn.active {
+    background: var(--accent-primary);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(128, 37, 37, 0.2);
+  }
+
+  /* ═══════════════════════════════════════
+     ALPHABET NAV
+     ═══════════════════════════════════════ */
+  .glossary-alphabet {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .alphabet-link {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-family: var(--font-head);
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--text-muted);
     transition: all 0.2s ease;
   }
 
-  .filter-btn:hover,
-  .filter-btn.active {
-    background: var(--accent-primary);
-    border-color: var(--accent-primary);
-    color: #fff;
-  }
-
-  /* Секции по буквам */
-  .glossary-section {
-    margin-bottom: 50px;
-  }
-
-  .glossary-letter-heading {
-    font-family: var(--font-head);
-    font-size: 2.5rem;
-    font-weight: 400;
+  .alphabet-link:hover {
     color: var(--accent-primary);
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid rgba(128, 37, 37, 0.1);
+    background: rgba(128, 37, 37, 0.06);
   }
 
-  /* Карточки */
-  .glossary-cards {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
+  /* ═══════════════════════════════════════
+     SECTIONS — letter groups
+     ═══════════════════════════════════════ */
+  .glossary-section {
+    margin-bottom: 48px;
   }
 
-  .glossary-card {
-    padding: 24px 28px;
-    background: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    border-radius: 16px;
-    transition: all 0.25s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-  }
-
-  .glossary-card:hover {
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-    transform: translateY(-2px);
-  }
-
-  .glossary-card.hidden {
-    display: none;
-  }
-
-  .glossary-card-header {
+  .section-letter-row {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
+    gap: 16px;
+    margin-bottom: 24px;
   }
 
-  .glossary-card-icon {
-    font-size: 1.2rem;
+  .section-letter {
+    font-family: var(--font-head);
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--accent-primary);
+    letter-spacing: -0.02em;
+    line-height: 1;
     flex-shrink: 0;
   }
 
-  .glossary-card-title {
+  .section-letter-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(128, 37, 37, 0.12);
+  }
+
+  /* ═══════════════════════════════════════
+     ENTRIES — definition list
+     ═══════════════════════════════════════ */
+  .glossary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .glossary-entry {
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    transition: opacity 0.2s ease;
+  }
+
+  .glossary-entry:last-child {
+    border-bottom: none;
+  }
+
+  .glossary-entry.hidden {
+    display: none;
+  }
+
+  .entry-term {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
     font-family: var(--font-head);
-    font-size: 1.3rem;
+    font-size: 1.15rem;
     font-weight: 400;
     color: var(--text-main);
-    margin: 0;
+    letter-spacing: -0.02em;
   }
 
-  .glossary-card-link {
-    text-decoration: none;
+  .entry-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
     color: var(--text-main);
-    border-bottom: 1px solid rgba(128, 37, 37, 0.3);
-    transition: 0.2s;
+    border-bottom: 1px solid rgba(128, 37, 37, 0.25);
+    transition: all 0.2s ease;
   }
 
-  .glossary-card-link:hover {
+  .entry-link:hover {
     color: var(--accent-primary);
     border-bottom-color: var(--accent-primary);
   }
 
-  .glossary-card-definition {
+  .entry-arrow {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    opacity: 0;
+    transform: translateY(1px);
+    transition: opacity 0.2s ease;
+  }
+
+  .entry-link:hover .entry-arrow {
+    opacity: 0.6;
+  }
+
+  .entry-badge {
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    opacity: 0.5;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .entry-definition {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--text-muted);
+    margin: 0;
+    padding-left: 0;
+  }
+
+  /* ═══════════════════════════════════════
+     EMPTY STATE
+     ═══════════════════════════════════════ */
+  .glossary-empty {
+    text-align: center;
+    padding: 64px 0;
+  }
+
+  .empty-text {
     font-family: var(--font-body);
     font-size: 1rem;
-    line-height: 1.6;
-    color: #555;
-    margin: 0;
+    color: var(--text-muted);
+    opacity: 0.6;
   }
 
-  .glossary-card-readmore {
-    display: inline-block;
-    margin-top: 12px;
-    font-family: var(--font-body);
-    font-size: 0.9rem;
-    color: var(--accent-primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: 0.2s;
-  }
-
-  .glossary-card-readmore:hover {
-    opacity: 0.7;
-  }
-
-  /* Мобилка */
+  /* ═══════════════════════════════════════
+     RESPONSIVE
+     ═══════════════════════════════════════ */
   @media (max-width: 768px) {
-    .glossary-title { font-size: 2.5rem; }
-    .glossary-nav-letter { width: 32px; height: 32px; font-size: 0.85rem; }
-    .glossary-card { padding: 18px 20px; }
-    .glossary-letter-heading { font-size: 2rem; }
+    .glossary-page {
+      padding: 0 16px 80px;
+    }
+
+    .glossary-title {
+      font-size: 2.2rem;
+    }
+
+    .glossary-filters {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .alphabet-link {
+      width: 32px;
+      height: 32px;
+      font-size: 0.8rem;
+    }
+
+    .section-letter {
+      font-size: 1.6rem;
+    }
+
+    .entry-term {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .entry-badge {
+      order: 2;
+    }
   }
 </style>
 
 <script>
   function initGlossaryFilters() {
     const buttons = document.querySelectorAll('.filter-btn');
-    const cards = document.querySelectorAll('.glossary-card');
+    const entries = document.querySelectorAll('.glossary-entry');
     const sections = document.querySelectorAll('.glossary-section');
+    const emptyState = document.getElementById('glossaryEmpty');
 
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
-        buttons.forEach(b => b.classList.remove('active'));
+        // Обновить активную кнопку
+        buttons.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
         btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
 
         const filter = btn.getAttribute('data-filter');
 
-        cards.forEach(card => {
-          if (filter === 'all' || card.getAttribute('data-type') === filter) {
-            card.classList.remove('hidden');
+        // Фильтрация записей
+        let visibleCount = 0;
+        entries.forEach(entry => {
+          const el = entry as HTMLElement;
+          if (filter === 'all' || el.dataset.type === filter) {
+            el.classList.remove('hidden');
+            visibleCount++;
           } else {
-            card.classList.add('hidden');
+            el.classList.add('hidden');
           }
         });
 
-        // Скрываем пустые секции
+        // Скрыть пустые секции
         sections.forEach(section => {
-          const visible = section.querySelectorAll('.glossary-card:not(.hidden)');
+          const visible = section.querySelectorAll('.glossary-entry:not(.hidden)');
           (section as HTMLElement).style.display = visible.length ? '' : 'none';
         });
+
+        // Пустое состояние
+        if (emptyState) {
+          emptyState.style.display = visibleCount === 0 ? '' : 'none';
+        }
+      });
+    });
+  }
+
+  // Плавный скролл к букве
+  function initAlphabetScroll() {
+    const links = document.querySelectorAll('.alphabet-link');
+    links.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const href = link.getAttribute('href');
+        if (!href) return;
+        const target = document.querySelector(href);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       });
     });
   }
 
   initGlossaryFilters();
-  document.addEventListener('astro:after-swap', initGlossaryFilters);
+  initAlphabetScroll();
+  document.addEventListener('astro:after-swap', () => {
+    initGlossaryFilters();
+    initAlphabetScroll();
+  });
 </script>

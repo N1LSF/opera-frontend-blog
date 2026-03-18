@@ -5,10 +5,14 @@ import { sanityClient, urlFor } from '../../lib/sanity';
 import MainLayout from '../../layouts/MainLayout.astro';
 import { PortableText } from 'astro-portabletext';
 import PortableTextImage from '../../components/PortableTextImage.astro';
+import GlossaryTooltip from '../../components/GlossaryTooltip.astro';
 
 const customComponents = {
   type: {
     image: PortableTextImage,
+  },
+  mark: {
+    glossaryTooltip: GlossaryTooltip,
   }
 };
 
@@ -25,7 +29,17 @@ const post = await sanityClient.fetch(`*[_type == "post" && slug.current == $slu
   title,
   publishedAt,
   mainImage,
-  body,
+  body[]{
+    ...,
+    markDefs[]{
+      ...,
+      _type == "glossaryTooltip" => {
+        ...,
+        "term": reference->term,
+        "definition": reference->definition
+      }
+    }
+  },
   "authorName": author->name,
   "authorImage": author->image,
   "categoryTitle": category->title
@@ -212,7 +226,11 @@ if (!post) {
     .editorial-content ul { margin-bottom: 1.5em; padding-left: 1.5em; list-style-type: none; }
     .editorial-content li { margin-bottom: 0.6em; position: relative; text-align: left; }
     .editorial-content ul li::before { content: "•"; color: var(--accent-primary); font-weight: bold; position: absolute; left: -1em; }
-    .editorial-content blockquote { margin: 2.5em 0; padding: 0 0 0 1.5em; border-left: 3px solid var(--accent-primary); font-style: italic; font-family: var(--font-head); font-size: 1.4rem; color: #555; line-height: 1.6; text-align: left; }
+    .editorial-content blockquote { margin: 1.5em 0; padding: 0 0 0 1.5em; border-left: 3px solid var(--accent-primary); font-style: italic; font-family: var(--font-head); font-size: 1.4rem; color: #555; line-height: 1.6; text-align: left; }
+    
+    .editorial-content blockquote p:empty { display: none; }
+    .editorial-content blockquote p:first-child { margin-top: 0; }
+    .editorial-content blockquote p:last-child { margin-bottom: 0; }
     
     .editorial-content a { color: var(--accent-primary); text-decoration: none; border-bottom: 1px solid rgba(128, 37, 37, 0.3); transition: 0.2s; }
     .editorial-content a:hover { border-bottom-color: var(--accent-primary); background-color: rgba(128, 37, 37, 0.05); }
@@ -244,4 +262,29 @@ if (!post) {
 
     initDropCap();
     document.addEventListener('astro:after-swap', initDropCap);
+</script>
+
+<script>
+    function initTooltips() {
+        const tooltips = document.querySelectorAll('.glossary-tooltip');
+        
+        tooltips.forEach(tip => {
+            tip.addEventListener('click', (e) => {
+                if (window.innerWidth > 768) return;
+                e.preventDefault();
+                
+                tooltips.forEach(t => t.classList.remove('active'));
+                tip.classList.toggle('active');
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.glossary-tooltip')) {
+                tooltips.forEach(t => t.classList.remove('active'));
+            }
+        });
+    }
+
+    initTooltips();
+    document.addEventListener('astro:after-swap', initTooltips);
 </script>

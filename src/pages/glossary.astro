@@ -33,16 +33,15 @@ const typeConfig: Record<string, { label: string }> = {
 <MainLayout title="Глоссарий">
   <section class="glossary-page">
 
-    <!-- Заголовок -->
     <header class="glossary-header">
       <p class="glossary-overline">Справочник</p>
       <h1 class="glossary-title">Глоссарий</h1>
       <p class="glossary-desc">Термины, либреттисты и оперы — кратко и по существу</p>
     </header>
 
-    <!-- Фильтры -->
     <div class="glossary-controls">
       <div class="glossary-filters" role="tablist">
+        <span class="filter-pill"></span>
         <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">Все</button>
         <button class="filter-btn" data-filter="term" role="tab" aria-selected="false">Термины</button>
         <button class="filter-btn" data-filter="librettist" role="tab" aria-selected="false">Либреттисты</button>
@@ -50,14 +49,12 @@ const typeConfig: Record<string, { label: string }> = {
       </div>
     </div>
 
-    <!-- Алфавитная навигация -->
     <nav class="glossary-alphabet" aria-label="Алфавитная навигация">
       {letters.map(letter => (
         <a href={`#letter-${letter}`} class="alphabet-link">{letter}</a>
       ))}
     </nav>
 
-    <!-- Контент -->
     <div class="glossary-body">
       {letters.map(letter => (
         <section class="glossary-section" id={`letter-${letter}`}>
@@ -90,7 +87,6 @@ const typeConfig: Record<string, { label: string }> = {
       ))}
     </div>
 
-    <!-- Пустое состояние фильтра -->
     <div class="glossary-empty" id="glossaryEmpty" style="display: none;">
       <p class="empty-text">В этой категории пока нет записей</p>
     </div>
@@ -99,18 +95,13 @@ const typeConfig: Record<string, { label: string }> = {
 </MainLayout>
 
 <style>
-  /* ═══════════════════════════════════════
-     LAYOUT — 8px grid, max-width 760px
-     ═══════════════════════════════════════ */
   .glossary-page {
     max-width: 760px;
     margin: 0 auto;
     padding: 0 24px 96px;
   }
 
-  /* ═══════════════════════════════════════
-     HEADER
-     ═══════════════════════════════════════ */
+  /* HEADER */
   .glossary-header {
     text-align: center;
     margin-bottom: 48px;
@@ -143,9 +134,7 @@ const typeConfig: Record<string, { label: string }> = {
     line-height: 1.5;
   }
 
-  /* ═══════════════════════════════════════
-     FILTERS — pill buttons, border style
-     ═══════════════════════════════════════ */
+  /* FILTERS — sliding pill */
   .glossary-controls {
     display: flex;
     justify-content: center;
@@ -154,11 +143,27 @@ const typeConfig: Record<string, { label: string }> = {
 
   .glossary-filters {
     display: flex;
-    gap: 8px;
+    gap: 0;
     padding: 4px;
     background: var(--bg-card);
     border-radius: 12px;
     border: 1px solid rgba(0, 0, 0, 0.06);
+    position: relative;
+  }
+
+  .filter-pill {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    height: calc(100% - 8px);
+    border-radius: 8px;
+    background: var(--accent-primary);
+    box-shadow: 0 2px 8px rgba(128, 37, 37, 0.2);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 0;
+    will-change: transform, width;
   }
 
   .filter-btn {
@@ -171,24 +176,21 @@ const typeConfig: Record<string, { label: string }> = {
     font-weight: 500;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: color 0.25s ease;
     white-space: nowrap;
+    position: relative;
+    z-index: 1;
   }
 
   .filter-btn:hover {
     color: var(--text-main);
-    background: rgba(0, 0, 0, 0.03);
   }
 
   .filter-btn.active {
-    background: var(--accent-primary);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(128, 37, 37, 0.2);
   }
 
-  /* ═══════════════════════════════════════
-     ALPHABET NAV
-     ═══════════════════════════════════════ */
+  /* ALPHABET NAV */
   .glossary-alphabet {
     display: flex;
     flex-wrap: wrap;
@@ -218,9 +220,7 @@ const typeConfig: Record<string, { label: string }> = {
     background: rgba(128, 37, 37, 0.06);
   }
 
-  /* ═══════════════════════════════════════
-     SECTIONS — letter groups
-     ═══════════════════════════════════════ */
+  /* SECTIONS */
   .glossary-section {
     margin-bottom: 48px;
   }
@@ -248,9 +248,7 @@ const typeConfig: Record<string, { label: string }> = {
     background: rgba(128, 37, 37, 0.12);
   }
 
-  /* ═══════════════════════════════════════
-     ENTRIES — definition list
-     ═══════════════════════════════════════ */
+  /* ENTRIES */
   .glossary-list {
     display: flex;
     flex-direction: column;
@@ -331,9 +329,7 @@ const typeConfig: Record<string, { label: string }> = {
     padding-left: 0;
   }
 
-  /* ═══════════════════════════════════════
-     EMPTY STATE
-     ═══════════════════════════════════════ */
+  /* EMPTY STATE */
   .glossary-empty {
     text-align: center;
     padding: 64px 0;
@@ -346,9 +342,7 @@ const typeConfig: Record<string, { label: string }> = {
     opacity: 0.6;
   }
 
-  /* ═══════════════════════════════════════
-     RESPONSIVE
-     ═══════════════════════════════════════ */
+  /* RESPONSIVE */
   @media (max-width: 768px) {
     .glossary-page {
       padding: 0 16px 80px;
@@ -387,14 +381,39 @@ const typeConfig: Record<string, { label: string }> = {
 
 <script>
   function initGlossaryFilters() {
+    const container = document.querySelector('.glossary-filters');
     const buttons = document.querySelectorAll('.filter-btn');
+    const pill = document.querySelector('.filter-pill') as HTMLElement;
     const entries = document.querySelectorAll('.glossary-entry');
     const sections = document.querySelectorAll('.glossary-section');
     const emptyState = document.getElementById('glossaryEmpty');
 
+    if (!container || !pill || buttons.length === 0) return;
+
+    function movePill(btn: HTMLElement) {
+      const containerRect = container!.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      const offsetLeft = btnRect.left - containerRect.left - 4;
+      const width = btnRect.width;
+
+      pill.style.width = `${width}px`;
+      pill.style.transform = `translateX(${offsetLeft}px)`;
+    }
+
+    // Инициализация без анимации
+    const activeBtn = container.querySelector('.filter-btn.active') as HTMLElement;
+    if (activeBtn) {
+      pill.style.transition = 'none';
+      movePill(activeBtn);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          pill.style.transition = '';
+        });
+      });
+    }
+
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
-        // Обновить активную кнопку
         buttons.forEach(b => {
           b.classList.remove('active');
           b.setAttribute('aria-selected', 'false');
@@ -402,9 +421,10 @@ const typeConfig: Record<string, { label: string }> = {
         btn.classList.add('active');
         btn.setAttribute('aria-selected', 'true');
 
+        movePill(btn as HTMLElement);
+
         const filter = btn.getAttribute('data-filter');
 
-        // Фильтрация записей
         let visibleCount = 0;
         entries.forEach(entry => {
           const el = entry as HTMLElement;
@@ -416,13 +436,11 @@ const typeConfig: Record<string, { label: string }> = {
           }
         });
 
-        // Скрыть пустые секции
         sections.forEach(section => {
           const visible = section.querySelectorAll('.glossary-entry:not(.hidden)');
           (section as HTMLElement).style.display = visible.length ? '' : 'none';
         });
 
-        // Пустое состояние
         if (emptyState) {
           emptyState.style.display = visibleCount === 0 ? '' : 'none';
         }
@@ -430,7 +448,6 @@ const typeConfig: Record<string, { label: string }> = {
     });
   }
 
-  // Плавный скролл к букве
   function initAlphabetScroll() {
     const links = document.querySelectorAll('.alphabet-link');
     links.forEach(link => {

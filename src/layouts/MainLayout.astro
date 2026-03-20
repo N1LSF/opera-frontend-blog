@@ -8,6 +8,9 @@ const currentPath = Astro.url.pathname;
 const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
   footerText,
   footerLinks,
+  contactEmail,
+  contactText,
+  socialLinks,
   cookieText
 }`);
 ---
@@ -135,6 +138,42 @@ const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
             border-radius: 2px;
         }
 
+        .footer-email {
+            display: inline-block;
+            font-family: var(--font-head);
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .footer-email:hover {
+            color: #FFFFFF;
+            border-bottom-color: #FFFFFF;
+        }
+
+        .footer-socials {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .footer-social-link {
+            padding: 8px 20px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.8);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .footer-social-link:hover {
+            background: rgba(255,255,255,0.2);
+            color: #FFFFFF;
+        }
+
         .footer-bottom {
             display: flex;
             flex-direction: column;
@@ -188,7 +227,11 @@ const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
             .footer-logo {
                 font-size: 1rem;
             }
+            .footer-email {
+                font-size: 0.95rem;
+            }
         }
+
         /* КУКИ-БАННЕР */
         .cookie-banner {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -307,7 +350,7 @@ const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
         </nav>
     </aside>
 
-     <main>
+    <main>
         <slot />
     </main>
 </div>
@@ -318,7 +361,25 @@ const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
             <a href="/" class="footer-logo">Опера глазами читателя</a>
             <p class="footer-slogan">Блог о либретто, смыслах и судьбах</p>
         </div>
+
         <div class="footer-divider"></div>
+
+        {settings?.contactEmail && (
+            <a href={`mailto:${settings.contactEmail}`} class="footer-email">
+                {settings.contactEmail}
+            </a>
+        )}
+
+        {settings?.socialLinks && settings.socialLinks.length > 0 && (
+            <div class="footer-socials">
+                {settings.socialLinks.map((s: any) => (
+                    <a href={s.url} target="_blank" rel="noopener noreferrer" class="footer-social-link">
+                        {s.platform}
+                    </a>
+                ))}
+            </div>
+        )}
+
         <div class="footer-bottom">
             {settings?.footerLinks && settings.footerLinks.length > 0 && (
                 <nav class="footer-links">
@@ -331,6 +392,11 @@ const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
         </div>
     </div>
 </footer>
+
+<div class="cookie-banner" id="cookie-banner">
+    <p>{settings?.cookieText || 'Мы используем cookies для улучшения работы сайта.'}</p>
+    <button class="cookie-btn" id="cookie-accept">Принять</button>
+</div>
 
 <script is:inline>
     // ШТОРКА

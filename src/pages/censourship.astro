@@ -2,7 +2,10 @@
 import { sanityClient, urlFor } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro';
 
-const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**")) && "skandaly-i-cenzura" in categories[]->slug.current] | order(publishedAt desc){
+const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**")) && (
+  category->slug.current == "skandaly-i-cenzura" ||
+  "skandaly-i-cenzura" in categories[]->slug.current
+)] | order(publishedAt desc){
   title,
   slug,
   publishedAt,

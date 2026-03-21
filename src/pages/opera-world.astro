@@ -2,7 +2,10 @@
 import { sanityClient, urlFor } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro';
 
-const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**")) && "opernyj-mir" in categories[]->slug.current] | order(publishedAt desc) {
+const posts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**")) && (
+  category->slug.current == "opernyj-mir" ||
+  "opernyj-mir" in categories[]->slug.current
+)] | order(publishedAt desc) {
   title, slug, mainImage, "composerName": composer->name, "countryName": country->title, "eraTitle": era->title
 }`);
 ---

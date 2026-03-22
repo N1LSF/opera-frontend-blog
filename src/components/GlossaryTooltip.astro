@@ -1,86 +1,77 @@
----
-const { node } = Astro.props;
+import {defineField, defineType} from 'sanity'
 
-const markDef = node.markDef || {};
-const term = markDef.term || '';
-const definition = markDef.definition || '';
----
-
-<span class="glossary-tooltip" data-tooltip={definition}><span class="glossary-tooltip-inner"><slot /></span></span>
-
-<style>
-    .glossary-tooltip {
-        cursor: help;
-        position: relative;
-        display: inline;
-    }
-
-    .glossary-tooltip-inner {
-        color: var(--accent-primary);
-        border-bottom: 1px dashed var(--accent-primary);
-    }
-
-    .glossary-tooltip::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        bottom: calc(100% + 8px);
-        left: 50%;
-        transform: translateX(-50%);
-        background: #FFFFFF;
-        color: var(--text-main);
-        padding: 12px 16px;
-        border-radius: 12px;
-        font-size: 0.85rem;
-        font-style: normal;
-        font-family: var(--font-body);
-        line-height: 1.5;
-        white-space: normal;
-        width: max-content;
-        max-width: 280px;
-        text-align: left;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-        border: 1px solid rgba(0,0,0,0.06);
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.2s ease, visibility 0.2s ease;
-        pointer-events: none;
-        z-index: 100;
-    }
-
-    .glossary-tooltip::before {
-        content: '';
-        position: absolute;
-        bottom: calc(100% + 2px);
-        left: 50%;
-        transform: translateX(-50%);
-        border: 6px solid transparent;
-        border-top-color: #FFFFFF;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.2s ease, visibility 0.2s ease;
-        z-index: 101;
-    }
-
-    .glossary-tooltip:hover::after,
-    .glossary-tooltip:hover::before,
-    .glossary-tooltip.active::after,
-    .glossary-tooltip.active::before {
-        opacity: 1;
-        visibility: visible;
-    }
-
-    @media (max-width: 768px) {
-        .glossary-tooltip::after {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            max-width: calc(100vw - 40px);
-            width: calc(100vw - 40px);
-        }
-
-        .glossary-tooltip::before {
-            display: none;
-        }
-    }
-</style>
+export default defineType({
+  name: 'glossaryTerm',
+  title: 'Глоссарий',
+  type: 'document',
+  fields: [
+    defineField({
+      name: 'term',
+      title: 'Термин / Имя',
+      type: 'string',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'slug',
+      title: 'Slug (URL)',
+      type: 'slug',
+      options: { source: 'term', maxLength: 96 },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'termType',
+      title: 'Тип записи',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Термин', value: 'term' },
+          { title: 'Либреттист', value: 'librettist' },
+          { title: 'Опера', value: 'opera' },
+          { title: 'Имя', value: 'person' },
+        ],
+        layout: 'radio',
+      },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'definition',
+      title: 'Краткое определение (для тултипа)',
+      description: 'Короткий текст — появится при наведении на термин в статье',
+      type: 'text',
+      rows: 3,
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'linkedPost',
+      title: 'Ссылка на статью',
+      description: 'Для либреттистов и опер — ссылка на подробную статью в рубрике',
+      type: 'reference',
+      to: [{ type: 'post' }],
+    }),
+  ],
+  preview: {
+    select: {
+      title: 'term',
+      subtitle: 'termType',
+    },
+    prepare({ title, subtitle }) {
+      const labels: Record<string, string> = {
+        term: 'Термин',
+        librettist: 'Либреттист',
+        opera: 'Опера',
+        person: 'Имя',
+      }
+      return {
+        title,
+        subtitle: labels[subtitle] || subtitle,
+      }
+    },
+  },
+  orderings: [
+    {
+      title: 'По алфавиту',
+      name: 'termAsc',
+      by: [{ field: 'term', direction: 'asc' }],
+    },
+  ],
+})

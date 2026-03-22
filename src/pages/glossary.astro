@@ -37,7 +37,7 @@ const typeConfig: Record<string, { label: string }> = {
     <header class="glossary-header">
       <p class="glossary-overline">Справочник</p>
       <h1 class="glossary-title">Глоссарий</h1>
-      <p class="glossary-desc">Термины, либреттисты и оперы — кратко и по существу</p>
+      <p class="glossary-desc">Термины, либреттисты, оперы и имена — кратко и по существу</p>
     </header>
 
     <div class="glossary-controls">
@@ -47,6 +47,7 @@ const typeConfig: Record<string, { label: string }> = {
         <button class="filter-btn" data-filter="term" role="tab" aria-selected="false">Термины</button>
         <button class="filter-btn" data-filter="librettist" role="tab" aria-selected="false">Либреттисты</button>
         <button class="filter-btn" data-filter="opera" role="tab" aria-selected="false">Оперы</button>
+        <button class="filter-btn" data-filter="person" role="tab" aria-selected="false">Имена</button>
       </div>
     </div>
 
@@ -66,7 +67,7 @@ const typeConfig: Record<string, { label: string }> = {
           <dl class="glossary-list">
             {grouped[letter].map((item: any) => (
               <div class="glossary-entry" data-type={item.termType}>
-                <dt class="entry-term">
+                                <dt class="entry-term">
                   {item.linkedPostSlug ? (
                     <a href={`/blog/${item.linkedPostSlug}`} class="entry-link">
                       {item.term}
@@ -102,7 +103,6 @@ const typeConfig: Record<string, { label: string }> = {
     padding: 0 24px 96px;
   }
 
-  /* HEADER */
   .glossary-header {
     text-align: center;
     margin-bottom: 48px;
@@ -135,7 +135,6 @@ const typeConfig: Record<string, { label: string }> = {
     line-height: 1.5;
   }
 
-  /* FILTERS — sliding pill */
   .glossary-controls {
     display: flex;
     justify-content: center;
@@ -191,7 +190,6 @@ const typeConfig: Record<string, { label: string }> = {
     color: #fff;
   }
 
-  /* ALPHABET NAV */
   .glossary-alphabet {
     display: flex;
     flex-wrap: wrap;
@@ -221,7 +219,6 @@ const typeConfig: Record<string, { label: string }> = {
     background: rgba(128, 37, 37, 0.06);
   }
 
-  /* SECTIONS */
   .glossary-section {
     margin-bottom: 48px;
   }
@@ -249,7 +246,6 @@ const typeConfig: Record<string, { label: string }> = {
     background: rgba(128, 37, 37, 0.12);
   }
 
-  /* ENTRIES */
   .glossary-list {
     display: flex;
     flex-direction: column;
@@ -330,7 +326,6 @@ const typeConfig: Record<string, { label: string }> = {
     padding-left: 0;
   }
 
-  /* EMPTY STATE */
   .glossary-empty {
     text-align: center;
     padding: 64px 0;
@@ -343,7 +338,6 @@ const typeConfig: Record<string, { label: string }> = {
     opacity: 0.6;
   }
 
-  /* RESPONSIVE */
   @media (max-width: 768px) {
     .glossary-page {
       padding: 0 16px 80px;
@@ -401,7 +395,6 @@ const typeConfig: Record<string, { label: string }> = {
       pill.style.transform = `translateX(${offsetLeft}px)`;
     }
 
-    // Инициализация без анимации
     const activeBtn = container.querySelector('.filter-btn.active') as HTMLElement;
     if (activeBtn) {
       pill.style.transition = 'none';

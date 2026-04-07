@@ -13,6 +13,14 @@ const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
   socialLinks,
   cookieText
 }`);
+
+const categories = await sanityClient.fetch(`*[_type == "category"] | order(order asc){
+  title,
+  "slug": slug.current,
+  group,
+  order,
+  pageUrl
+}`);
 ---
 
 <!DOCTYPE html>
@@ -83,14 +91,75 @@ const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
             background: rgba(0,0,0,0.5); z-index: 998; opacity: 0; transition: opacity 0.3s;
         }
 
-        .sidebar-brand-card { background: var(--bg-card); padding: 30px 20px; border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); text-align: center; }
-        .logo { font-family: var(--font-head); font-weight: 700; font-size: 1.4rem; color: var(--accent-primary); line-height: 1.25; margin-bottom: 8px; display: block; text-transform: uppercase; }
-        .slogan { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
-        .sidebar-nav-card { background: var(--bg-card); padding: 25px 15px; border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); flex-grow: 1; overflow-y: auto; }
-        .nav-group-title { font-size: 0.7rem; text-transform: uppercase; color: #A1A1A6; margin: 0 0 10px 15px; letter-spacing: 1.5px; font-weight: 700; }
-        .nav-link { display: flex; align-items: center; padding: 10px 16px; border-radius: 12px; font-weight: 500; font-size: 0.95rem; color: var(--text-main); margin-bottom: 4px; transition: all 0.2s ease; }
-        .nav-link:hover { background-color: rgba(0,0,0,0.03); transform: translateX(4px); }
-        .nav-link.active { background-color: var(--accent-light); color: var(--accent-primary); }
+        .sidebar-brand-card {
+            background: var(--bg-card);
+            padding: 30px 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            text-align: center;
+            border-bottom: 3px solid var(--accent-primary);
+        }
+        .logo { font-family: var(--font-head); font-weight: 700; font-size: 1.4rem; color: var(--accent-primary); line-height: 1.25; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+        .slogan { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; font-style: italic; }
+        .sidebar-nav-card {
+            background: var(--bg-card);
+            padding: 20px 12px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .nav-group-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: var(--accent-primary);
+            margin: 8px 0 8px 16px;
+            letter-spacing: 2px;
+            font-weight: 700;
+            opacity: 0.6;
+            position: relative;
+            padding-bottom: 6px;
+        }
+        .nav-group-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 24px;
+            height: 2px;
+            background: var(--accent-primary);
+            opacity: 0.3;
+            border-radius: 1px;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            margin-bottom: 2px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            letter-spacing: 0.1px;
+        }
+        .nav-link:hover {
+            background-color: var(--accent-light);
+            color: var(--accent-primary);
+            transform: translateX(4px);
+        }
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--accent-light) 0%, rgba(128, 37, 37, 0.08) 100%);
+            color: var(--accent-primary);
+            font-weight: 600;
+            box-shadow: inset 3px 0 0 var(--accent-primary);
+        }
+        .nav-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(128, 37, 37, 0.12), transparent);
+            margin: 12px 16px;
+        }
 
         main { background: transparent; padding-top: 24px; min-width: 0; }
 
@@ -381,25 +450,28 @@ const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
                 <li><a href="/contacts/" class={`nav-link ${currentPath.startsWith('/contacts') ? 'active' : ''}`}>Контакты</a></li>
                 <li><a href="/glossary/" class={`nav-link ${currentPath.startsWith('/glossary') ? 'active' : ''}`}>Глоссарий</a></li>
             </ul>
-            <br>
-            <div class="nav-group-title">Рубрики</div>
-            <ul>
-                <li><a href="/librettists/" class={`nav-link ${currentPath.startsWith('/librettists') ? 'active' : ''}`}>Либреттисты</a></li>
-                <li><a href="/opera-plots/" class={`nav-link ${currentPath.startsWith('/opera-plots') ? 'active' : ''}`}>Оперные сюжеты</a></li>
-                <li><a href="/read/" class={`nav-link ${currentPath.startsWith('/read') ? 'active' : ''}`}>Что почитать</a></li>
-                <li><a href="/listen/" class={`nav-link ${currentPath.startsWith('/listen') ? 'active' : ''}`}>Что послушать</a></li>
-            </ul>
-            <br>
-            <div class="nav-group-title">Не только сюжеты</div>
-            <ul>
-                <li><a href="/history/" class={`nav-link ${currentPath.startsWith('/history') ? 'active' : ''}`}>История создания</a></li>
-                <li><a href="/eternal-plots/" class={`nav-link ${currentPath.startsWith('/eternal-plots') ? 'active' : ''}`}>Вечные сюжеты</a></li>
-                <li><a href="/book-to-opera/" class={`nav-link ${currentPath.startsWith('/book-to-opera') ? 'active' : ''}`}>Из книги в оперу</a></li>
-                <li><a href="/censourship/" class={`nav-link ${currentPath.startsWith('/censourship') ? 'active' : ''}`}>Цензура и скандалы</a></li>
-                <li><a href="/detective/" class={`nav-link ${currentPath.startsWith('/detective') ? 'active' : ''}`}>Оперный детектив</a></li>
-                <li><a href="/librettology/" class={`nav-link ${currentPath.startsWith('/librettology') ? 'active' : ''}`}>Либреттология</a></li>
-                <li><a href="/opera-world/" class={`nav-link ${currentPath.startsWith('/opera-world') ? 'active' : ''}`}>Оперный мир</a></li>
-            </ul>
+            <div class="nav-divider" role="separator"></div>
+            {categories.filter((c: any) => c.group === 'main').length > 0 && (
+              <>
+                <div class="nav-group-title">Рубрики</div>
+                <ul>
+                    {categories.filter((c: any) => c.group === 'main').map((cat: any) => (
+                        <li><a href={cat.pageUrl || `/${cat.slug}/`} class={`nav-link ${currentPath.startsWith(cat.pageUrl?.replace(/\/$/, '') || `/${cat.slug}`) ? 'active' : ''}`}>{cat.title}</a></li>
+                    ))}
+                </ul>
+              </>
+            )}
+            <div class="nav-divider"></div>
+            {categories.filter((c: any) => c.group === 'extra').length > 0 && (
+              <>
+                <div class="nav-group-title">Не только сюжеты</div>
+                <ul>
+                    {categories.filter((c: any) => c.group === 'extra').map((cat: any) => (
+                        <li><a href={cat.pageUrl || `/${cat.slug}/`} class={`nav-link ${currentPath.startsWith(cat.pageUrl?.replace(/\/$/, '') || `/${cat.slug}`) ? 'active' : ''}`}>{cat.title}</a></li>
+                    ))}
+                </ul>
+              </>
+            )}
         </nav>
     </aside>
 

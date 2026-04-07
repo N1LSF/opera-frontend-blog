@@ -95,7 +95,6 @@ const categories = await sanityClient.fetch(`*[_type == "category"] | order(orde
             background: var(--bg-card);
             padding: 30px 20px;
             border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-soft);
             text-align: center;
             border-bottom: 3px solid var(--accent-primary);
         }
@@ -105,7 +104,6 @@ const categories = await sanityClient.fetch(`*[_type == "category"] | order(orde
             background: var(--bg-card);
             padding: 20px 12px;
             border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-soft);
             flex-grow: 1;
             overflow-y: auto;
         }
@@ -150,10 +148,9 @@ const categories = await sanityClient.fetch(`*[_type == "category"] | order(orde
             transform: translateX(4px);
         }
         .nav-link.active {
-            background: linear-gradient(135deg, var(--accent-light) 0%, rgba(128, 37, 37, 0.08) 100%);
+            background-color: var(--accent-light);
             color: var(--accent-primary);
             font-weight: 600;
-            box-shadow: inset 3px 0 0 var(--accent-primary);
         }
         .nav-divider {
             height: 1px;

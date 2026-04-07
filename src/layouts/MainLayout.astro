@@ -18,8 +18,7 @@ const categories = await sanityClient.fetch(`*[_type == "category"] | order(orde
   title,
   "slug": slug.current,
   group,
-  order,
-  pageUrl
+  order
 }`);
 ---
 
@@ -453,7 +452,7 @@ const categories = await sanityClient.fetch(`*[_type == "category"] | order(orde
                 <div class="nav-group-title">Рубрики</div>
                 <ul>
                     {categories.filter((c: any) => c.group === 'main').map((cat: any) => (
-                        <li><a href={cat.pageUrl || `/${cat.slug}/`} class={`nav-link ${currentPath.startsWith(cat.pageUrl?.replace(/\/$/, '') || `/${cat.slug}`) ? 'active' : ''}`}>{cat.title}</a></li>
+                        <li><a href={`/${cat.slug}/`} class={`nav-link ${currentPath.startsWith(`/${cat.slug}`) ? 'active' : ''}`}>{cat.title}</a></li>
                     ))}
                 </ul>
               </>
@@ -464,7 +463,7 @@ const categories = await sanityClient.fetch(`*[_type == "category"] | order(orde
                 <div class="nav-group-title">Не только сюжеты</div>
                 <ul>
                     {categories.filter((c: any) => c.group === 'extra').map((cat: any) => (
-                        <li><a href={cat.pageUrl || `/${cat.slug}/`} class={`nav-link ${currentPath.startsWith(cat.pageUrl?.replace(/\/$/, '') || `/${cat.slug}`) ? 'active' : ''}`}>{cat.title}</a></li>
+                        <li><a href={`/${cat.slug}/`} class={`nav-link ${currentPath.startsWith(`/${cat.slug}`) ? 'active' : ''}`}>{cat.title}</a></li>
                     ))}
                 </ul>
               </>

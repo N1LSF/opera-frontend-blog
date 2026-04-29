@@ -42,12 +42,29 @@ const post = await sanityClient.fetch(`*[_type == "post" && slug.current == $slu
   },
   "authorName": author->name,
   "authorImage": author->image,
-  "categoryTitle": category->title
+  "categoryTitle": category->title,
+  "attachment": {
+    "label": attachment.label,
+    "url": attachment.asset->url,
+    "filename": attachment.asset->originalFilename,
+    "size": attachment.asset->size,
+    "extension": attachment.asset->extension
+  }
 }`, { slug });
 
 if (!post) {
   return Astro.redirect('/404');
 }
+
+// Хелпер: красиво форматируем размер файла
+function formatFileSize(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024) return `${bytes} Б`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} КБ`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
+}
+
+const hasAttachment = post.attachment && post.attachment.url;
 ---
 
 <MainLayout title={post.title}>
@@ -92,6 +109,40 @@ if (!post) {
                 <p>Текст статьи скоро появится...</p>
             )}
         </div>
+
+        {hasAttachment && (
+            <a 
+                href={post.attachment.url} 
+                class="attachment-card" 
+                download={post.attachment.filename}
+                target="_blank"
+                rel="noopener"
+            >
+                <div class="attachment-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                        <path d="M14 2v6h6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                    </svg>
+                    {post.attachment.extension && (
+                        <span class="attachment-ext">{post.attachment.extension.toUpperCase()}</span>
+                    )}
+                </div>
+                <div class="attachment-info">
+                    <div class="attachment-label">
+                        {post.attachment.label || 'Скачать материалы'}
+                    </div>
+                    <div class="attachment-meta">
+                        {post.attachment.filename}
+                        {post.attachment.size && ` · ${formatFileSize(post.attachment.size)}`}
+                    </div>
+                </div>
+                <div class="attachment-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4v16m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </a>
+        )}
         
     </article>
 </MainLayout>
@@ -185,11 +236,140 @@ if (!post) {
         display: block; 
     }
 
+    /* === Карточка прикреплённого файла === */
+    .attachment-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-top: 60px;
+        padding: 22px 26px;
+        background: #fafafa;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 18px;
+        text-decoration: none;
+        color: var(--text-main);
+        position: relative;
+        z-index: 1;
+        transition: 
+            transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 0.4s ease,
+            background 0.4s ease;
+    }
+
+    .attachment-card:hover {
+        transform: translateY(-3px);
+        background: #ffffff;
+        border-color: rgba(128, 37, 37, 0.2);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    .attachment-icon {
+        flex-shrink: 0;
+        width: 52px;
+        height: 56px;
+        position: relative;
+        color: var(--accent-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .attachment-icon svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    .attachment-ext {
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: var(--font-body);
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: #fff;
+        background: var(--accent-primary);
+        padding: 2px 6px;
+        border-radius: 3px;
+        line-height: 1;
+    }
+
+    .attachment-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .attachment-label {
+        font-family: var(--font-head);
+        font-size: 1.25rem;
+        font-weight: 400;
+        color: var(--text-main);
+        margin-bottom: 4px;
+        line-height: 1.3;
+    }
+
+    .attachment-meta {
+        font-family: var(--font-body);
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .attachment-arrow {
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(128, 37, 37, 0.08);
+        color: var(--accent-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 
+            background 0.4s ease,
+            transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .attachment-arrow svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .attachment-card:hover .attachment-arrow {
+        background: var(--accent-primary);
+        color: #fff;
+        transform: translateY(2px);
+    }
+
     @media (max-width: 768px) {
         .article-main-title { font-size: 2.5rem; }
         .article-meta { flex-direction: column; gap: 8px; }
         .meta-dot { display: none; }
         .article-hero-image { border-radius: 16px; margin-bottom: 40px; }
+
+        .attachment-card {
+            gap: 14px;
+            padding: 16px 18px;
+            margin-top: 40px;
+        }
+        .attachment-icon {
+            width: 42px;
+            height: 46px;
+        }
+        .attachment-label {
+            font-size: 1.05rem;
+        }
+        .attachment-meta {
+            font-size: 0.8rem;
+        }
+        .attachment-arrow {
+            width: 32px;
+            height: 32px;
+        }
     }
 </style>
 

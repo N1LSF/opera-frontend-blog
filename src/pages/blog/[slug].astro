@@ -6,10 +6,12 @@ import MainLayout from '../../layouts/MainLayout.astro';
 import { PortableText } from 'astro-portabletext';
 import PortableTextImage from '../../components/PortableTextImage.astro';
 import GlossaryTooltip from '../../components/GlossaryTooltip.astro';
+import PortableTextFile from '../../components/PortableTextFile.astro';
 
 const customComponents = {
   type: {
     image: PortableTextImage,
+    fileAttachment: PortableTextFile,  // ← добавь эту строку
   },
   mark: {
     glossaryTooltip: GlossaryTooltip,
@@ -31,15 +33,22 @@ const post = await sanityClient.fetch(`*[_type == "post" && slug.current == $slu
   mainImage,
   body[]{
     ...,
+    _type == "fileAttachment" => {
+        ...,
+        "url": asset->url,
+        "filename": asset->originalFilename,
+        "size": asset->size,
+        "extension": asset->extension
+    },
     markDefs[]{
-      ...,
-      _type == "glossaryTooltip" => {
+        ...,
+        _type == "glossaryTooltip" => {
         ...,
         "term": reference->term,
         "definition": reference->definition
-      }
+        }
     }
-  },
+    },
   "authorName": author->name,
   "authorImage": author->image,
   "categoryTitle": category->title,

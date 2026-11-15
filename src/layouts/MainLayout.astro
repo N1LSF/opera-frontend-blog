@@ -169,6 +169,7 @@ const categories = await sanityClient.fetch(`*[_type == "category"] | order(orde
             display: flex;
             flex-direction: column;
             gap: 12px;
+            flex-shrink: 0;
         }
         .sidebar-quote .quote-icon {
             position: absolute;

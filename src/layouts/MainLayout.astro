@@ -11,7 +11,9 @@ const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
   contactEmail,
   contactText,
   socialLinks,
-  cookieText
+  cookieText,
+  quoteText,
+  quoteAuthor
 }`);
 
 const categories = await sanityClient.fetch(`*[_type == "category"] | order(order asc){

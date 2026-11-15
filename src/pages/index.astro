@@ -527,21 +527,25 @@ const heroPost = allPosts[0];
     /* АДАПТИВ */
     @media (max-width: 1000px) {
         .content { padding: 30px 20px; }
-        .editorial-dashboard { flex-direction: column; align-items: stretch; gap: 20px; }
-        .hero-column { flex: none; width: 100%; order: 2; }
-        .widgets-column { flex: none; width: 100%; order: 1; }
-        .hero-image-wrapper { height: 250px; }
-        .hero-content { min-width: 0; }
-        .hero-title { white-space: normal; }
+        .opening { grid-template-columns: 1fr; gap: 20px; height: auto; }
+        .lead-story { order: 2; }
+        .feed-panel { order: 1; }
+        .lead-media { min-height: 250px; }
+        .lead-body { min-width: 0; }
+        .lead-body h1 { font-size: clamp(1.6rem, 4vw, 2rem); }
     }
     @media (max-width: 768px) {
         .content { padding: 20px 15px; }
-        .hero-content { padding: 25px; }
-        .hero-title { font-size: 1.8rem; }
-        .hero-excerpt { font-size: 1rem; }
-        .articles-grid { grid-template-columns: 1fr; gap: 20px; }
+        .opening { grid-template-columns: 1fr; gap: 16px; }
+        .lead-body { padding: 20px 24px 24px; }
+        .lead-body h1 { font-size: 1.6rem; }
+        .lead-excerpt { font-size: .9rem; }
         .main-search-input { font-size: 16px; }
-        .quote-widget { padding: 25px 20px; }
+        .search-widget { padding: 10px 16px; }
+        .feed-heading h2 { font-size: 1.3rem; }
+        .feed-item a { grid-template-columns: 48px minmax(0, 1fr); gap: 10px; }
+        .feed-thumb { width: 48px; height: 60px; }
+        .feed-item h3 { font-size: .9rem; }
     }
 </style>
 

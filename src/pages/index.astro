@@ -24,62 +24,87 @@ const heroPost = allPosts[0];
 <MainLayout title="Главная">
     <main class="content">
 
-        <!-- ЖУРНАЛЬНЫЙ ДАШБОРД -->
-        <div class="editorial-dashboard" id="dashboard">
-            
-            <div class="hero-column" id="heroColumn">
+        <!-- ПОИСК И ЛЕНТА -->
+        <div class="utility-bar">
+            <div class="widget search-widget">
+                <svg width="18" height="18" class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="mainSearch" class="main-search-input" placeholder="Найти оперу, композитора, рубрику..." autocomplete="off">
+            </div>
+        </div>
+
+        <!-- ГЕРОИЧЕСКАЯ СТАТЬЯ И ЛЕНТА РЯДОМ -->
+        <div class="opening">
+            <article class="lead-story framed">
                 {heroPost && (
-                    <article class="hero-card">
+                    <>
                         <a href={`/blog/${heroPost.slug?.current || '#'}/`} class="hero-link">
-                            <div class="hero-image-wrapper">
+                            <div class="lead-media">
                                 {heroPost.mainImage ? (
-                                    <img src={urlFor(heroPost.mainImage).width(800).height(500).auto('format').url()} alt={heroPost.title} class="hero-img" />
+                                    <img src={urlFor(heroPost.mainImage).width(800).height(500).auto('format').url()} alt={heroPost.title} loading="eager" />
                                 ) : (
-                                    <div class="hero-placeholder"></div>
+                                    <div style="width: 100%; height: 100%; background: #e8ded8;"></div>
                                 )}
                                 {heroPost.categoryName && (
-                                    <span class="hero-badge">{heroPost.categoryName}</span>
+                                    <span class="fresh-label">{heroPost.categoryName}</span>
                                 )}
                             </div>
-                            <div class="hero-content">
-                                <h2 class="hero-title">{heroPost.title}</h2>
-                                <p class="hero-excerpt">{heroPost.excerpt || 'Читайте подробный разбор и историю создания этого шедевра в нашей новой статье.'}</p>
-                                <div class="hero-footer">
-                                    <span class="read-more">Читать статью →</span>
+                            <div class="lead-body">
+                                <h1>{heroPost.title}</h1>
+                                <p class="lead-quote">{heroPost.excerpt || 'Читайте подробный разбор и историю создания этого шедевра в нашей новой статье.'}</p>
+                                <div class="story-meta">
+                                    <span>{heroPost.categoryName}</span>
+                                    <span>•</span>
+                                    <span>{heroPost.composerName || 'Композитор'}</span>
+                                    <span>•</span>
+                                    <span>{new Date(heroPost.publishedAt).toLocaleDateString('ru-RU', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                                 </div>
+                                <a class="read-link" href={`/blog/${heroPost.slug?.current || '#'}/`}>
+                                    Читать статью
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                </a>
                             </div>
                         </a>
-                    </article>
+                    </>
                 )}
-            </div>
+            </article>
 
-            <aside class="widgets-column">
-                
-                <div class="widget search-widget">
-                    <svg width="18" height="18" class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <input type="text" id="mainSearch" class="main-search-input" placeholder="Найти оперу, композитора, рубрику..." autocomplete="off">
-                </div>
-
-                <div class="widget quote-widget">
-                    <svg class="quote-icon" width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
-                    <p class="quote-text">{settings?.quoteText || '«Опера — это когда парень получает удар кинжалом в спину, но вместо того, чтобы истекать кровью, он поет».'}</p>
-                    <span class="quote-author">{settings?.quoteAuthor || '— Эдуард Элгар'}</span>
-                </div>
-
-                    <div class="widget tags-widget">
-                        <h3>Популярное</h3>
-                        <div class="tags-flex">
-                            <a href="/opera-plots/" class="tag-chip">Сюжеты</a>
-                            <a href="/history/" class="tag-chip">История создания</a>
-                            <a href="/librettists/" class="tag-chip">Либреттисты</a>
-                            <a href="/censourship/" class="tag-chip">Цензура</a>
-                        </div>
+            <aside class="feed-panel framed">
+                <header class="feed-heading">
+                    <h2>Читая либретто</h2>
+                    <div class="feed-controls">
+                        <button class="feed-button" id="feed-up" aria-label="Предыдущие записи" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                        </button>
+                        <button class="feed-button" id="feed-down" aria-label="Следующие записи">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
                     </div>
+                </header>
+                <p class="feed-note">Короткие заметки о либретто, текстах и их создателях</p>
+                <div class="feed-window" id="feed-window">
+                    {allPosts.slice(0, 6).map((post) => (
+                        <article class="feed-item">
+                            <a href={`/blog/${post.slug?.current || '#'}/`}>
+                                {post.mainImage && (
+                                    <img class="feed-thumb" src={urlFor(post.mainImage).width(60).height(80).auto('format').url()} alt="" />
+                                )}
+                                <div>
+                                    <h3>{post.title}</h3>
+                                    <time datetime={post.publishedAt}>{new Date(post.publishedAt).toLocaleDateString('ru-RU', { month: 'short', day: 'numeric', year: '2-digit' })}</time>
+                                </div>
+                            </a>
+                        </article>
+                    ))}
                 </div>
-
+                <footer class="feed-footer">
+                    <span id="feed-count">1–3 из 6</span>
+                    <div class="feed-progress">
+                        <span id="feed-bar" style="transform:scaleX(.25)"></span>
+                    </div>
+                </footer>
             </aside>
         </div>
 
@@ -124,96 +149,60 @@ const heroPost = allPosts[0];
 <style>
     .content { padding: 40px 60px; }
 
-    /* === ДАШБОРД: FLEXBOX С ПЛАВНОЙ АНИМАЦИЕЙ === */
-    .editorial-dashboard { 
-        display: flex; 
-        align-items: stretch; 
-        gap: 30px; 
-        margin-bottom: 60px; 
-        transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
-    }
-    
-    .hero-column { 
-        flex: 2 1 0; 
-        overflow: hidden; 
-        opacity: 1; 
-        transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
-        max-height: 800px; 
-        min-width: 0; 
-    }
-    
-    .widgets-column { 
-        flex: 1 1 0; 
-        display: flex; 
-        flex-direction: column; 
-        gap: 20px; 
-        transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
-        min-width: 0; 
-    }
-
-    .collapsible-wrapper { 
-        display: flex; 
-        flex-direction: column; 
-        gap: 20px; 
-        overflow: hidden; 
-        max-height: 800px; 
-        opacity: 1; 
-        transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
-    }
-
-    /* === СОСТОЯНИЕ АКТИВНОГО ПОИСКА === */
-    .editorial-dashboard.is-searching { 
-        gap: 0; 
-        margin-bottom: 40px; 
-    }
-    .editorial-dashboard.is-searching .hero-column { 
-        flex: 0 0 0; 
-        opacity: 0; 
-        max-height: 0; 
-    }
-    .editorial-dashboard.is-searching .widgets-column { 
-        flex: 1 1 100%; 
-    }
-    .editorial-dashboard.is-searching .collapsible-wrapper { 
-        max-height: 0; 
-        opacity: 0; 
-        margin: 0; 
-        gap: 0; 
-    }
-    .editorial-dashboard.is-searching .search-widget { 
-        box-shadow: 0 10px 40px rgba(0,0,0,0.08); 
-        border-color: var(--accent-primary); 
-    }
-
-    /* Герой-карточка */
-    .hero-card { background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-soft, 0 4px 20px rgba(0,0,0,0.03)); transition: 0.3s; height: 100%; display: flex; flex-direction: column; }
-    .hero-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); }
-    .hero-image-wrapper { position: relative; height: 350px; overflow: hidden; }
-    .hero-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease; }
-    .hero-card:hover .hero-img { transform: scale(1.05); }
-    .hero-placeholder { width: 100%; height: 100%; background: #eee; }
-    .hero-badge { position: absolute; top: 20px; left: 20px; background: rgba(255,255,255,0.9); color: var(--accent-primary); padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; backdrop-filter: blur(5px); }
-    .hero-content { padding: 40px; display: flex; flex-direction: column; flex-grow: 1; min-width: 400px; }
-    .hero-title { font-family: var(--font-head); font-size: 2.5rem; line-height: 1.1; margin-bottom: 15px; color: var(--text-main); transition: color 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .hero-card:hover .hero-title { color: var(--accent-primary); }
-    .hero-excerpt { color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px; }
-    .read-more { margin-top: auto; font-family: var(--font-head); font-weight: 700; color: var(--accent-primary); font-size: 1.1rem; }
-
-    /* Виджеты */
-    .widget { background: var(--bg-card); border-radius: var(--radius-lg); padding: 25px; box-shadow: var(--shadow-soft, 0 4px 20px rgba(0,0,0,0.03)); transition: all 0.3s ease; border: 1px solid transparent; }
+    /* ПОИСК И ЛЕНТА */
+    .utility-bar { display: grid; grid-template-columns: 1fr; gap: 28px; margin-bottom: 26px; }
     .search-widget { padding: 10px; position: relative; display: flex; align-items: center; }
     .search-icon { position: absolute; left: 24px; color: #aaa; }
     .main-search-input { width: 100%; padding: 18px 20px 18px 50px; border: none; background: transparent; font-family: var(--font-body); font-size: 1.05rem; outline: none; color: var(--text-main); }
-    
-    .quote-widget { background: var(--accent-primary); color: #fff; position: relative; overflow: hidden; padding: 35px 30px; }
-    .quote-icon { position: absolute; top: -10px; right: -10px; width: 100px; height: 100px; opacity: 0.1; transform: rotate(15deg); }
-    .quote-text { font-family: var(--font-head); font-size: 1.2rem; line-height: 1.5; font-style: italic; margin-bottom: 15px; position: relative; z-index: 2; }
-    .quote-author { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
 
-    .tags-widget h3 { font-family: var(--font-head); font-size: 1.1rem; margin-bottom: 15px; color: var(--text-main); }
-    .tags-flex { display: flex; flex-wrap: wrap; gap: 10px; }
-    .tag-chip { background: var(--bg-body); color: var(--text-muted); padding: 8px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 500; transition: 0.2s; }
-    .tag-chip:hover { background: var(--accent-light); color: var(--accent-primary); transform: translateY(-2px); }
+    /* ГЛАВНАЯ СТАТЬЯ И ЛЕНТА */
+    .opening { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(300px, .9fr); gap: 32px; align-items: stretch; height: 580px; margin-bottom: 60px; }
+    .framed { position: relative; background: var(--bg-card); border: 1px solid rgba(128,37,37,.36); box-shadow: 0 4px 20px rgba(0,0,0,.03); }
+    
+    .lead-story { min-width: 0; display: flex; flex-direction: column; overflow: hidden; border-radius: 28px; }
+    .lead-media { position: relative; height: auto; min-height: 230px; flex: 1; margin: 12px 12px 0; overflow: hidden; border-radius: 20px; background: #e8ded8; }
+    .lead-media:after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,8,8,.04) 55%, rgba(20,8,8,.45)); pointer-events: none; }
+    .lead-media img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; transform: scale(1.035); transition: transform .8s cubic-bezier(.16,1,.3,1); will-change: transform; }
+    .lead-story:hover .lead-media img { transform: scale(1.065); }
+    .fresh-label { position: absolute; left: 18px; top: 18px; z-index: 2; background: var(--accent-primary); color: #fff; padding: 8px 14px; border-radius: 999px; font-size: .73rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+    .lead-body { position: relative; z-index: 4; padding: 22px 28px 20px; display: flex; flex-direction: column; flex: 0 0 auto; }
+    .lead-body h1 { font-family: var(--font-head); font-size: clamp(3.5rem, 6vw, 5rem); font-weight: 400; line-height: .95; letter-spacing: -.035em; text-wrap: balance; margin-bottom: 14px; color: var(--text-main); }
+    .lead-quote { font-family: var(--font-head); font-size: 1.1rem; line-height: 1.45; font-style: italic; color: #463C40; max-width: 34ch; margin-bottom: 16px; }
+    .story-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 18px; font-size: .8rem; color: var(--text-muted); margin-top: 0; padding-top: 12px; border-top: 1px solid rgba(45,28,28,.13); }
+    .story-meta span:first-child { color: var(--accent-primary); font-weight: 600; }
+    .read-link { display: inline-flex; align-items: center; gap: 10px; background: var(--accent-primary); color: #fff; padding: 0 20px; border-radius: 999px; font-weight: 600; font-size: .95rem; width: max-content; margin-top: 8px; min-height: 44px; transition: background .2s; text-decoration: none; }
+    .read-link:hover { background: #5E1818; }
+    .read-link svg { width: 18px; height: 18px; transition: transform .3s cubic-bezier(.16,1,.3,1); }
+    .read-link:hover svg { transform: translateX(5px); }
+
+    /* ЛЕНТА "ЧИТАЯ ЛИБРЕТТО" */
+    .feed-panel { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 24px 20px 16px; overflow: hidden; border-radius: 28px; background: #fff; color: var(--text-main); }
+    .feed-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 4px; }
+    .feed-heading h2 { font-family: var(--font-head); font-weight: 400; letter-spacing: -.025em; line-height: 1.05; text-wrap: balance; font-size: 2rem; color: var(--accent-primary); }
+    .feed-note { font-size: .88rem; color: var(--text-muted); padding: 9px 4px 18px; }
+    .feed-controls { display: flex; gap: 0; border: 1px solid rgba(128,37,37,.36); border-radius: 999px; overflow: hidden; }
+    .feed-button { width: 44px; height: 44px; border: 0; background: transparent; color: var(--accent-primary); display: grid; place-items: center; cursor: pointer; transition: background .2s, opacity .2s; }
+    .feed-button:hover { background: #FDF2F2; }
+    .feed-button:disabled { opacity: .25; cursor: default; }
+    .feed-button svg { width: 18px; height: 18px; }
+    .feed-window { position: relative; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding-left: 15px; mask-image: linear-gradient(to bottom, #000 96%, transparent); }
+    .feed-window::-webkit-scrollbar { display: none; }
+    .feed-window:before { content: ""; position: absolute; left: 3px; top: 8px; bottom: 8px; width: 1px; background: rgba(128,37,37,.36); }
+    .feed-item { position: relative; border-top: 1px solid rgba(45,28,28,.13); }
+    .feed-item:first-child { border-top: 0; }
+    .feed-item:before { content: ""; position: absolute; left: -15px; top: 27px; width: 7px; height: 7px; border: 1px solid var(--accent-primary); background: #fff; border-radius: 50%; z-index: 2; }
+    .feed-item a { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 13px; padding: 17px 4px; align-items: start; text-decoration: none; }
+    .feed-thumb { width: 58px; height: 72px; object-fit: cover; object-position: 50% 25%; filter: saturate(.82); transition: filter .3s, transform .4s cubic-bezier(.16,1,.3,1); }
+    .feed-item a:hover .feed-thumb { filter: saturate(1.1); transform: translateY(-2px); }
+    .feed-item h3 { font-family: var(--font-head); font-size: 1rem; font-weight: 400; line-height: 1.2; margin: 2px 0 8px; text-wrap: pretty; transition: color .2s; color: var(--text-main); }
+    .feed-item a:hover h3 { color: var(--accent-primary); text-decoration: underline; text-underline-offset: 4px; }
+    .feed-item time { font-size: .8rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+    .feed-footer { display: flex; align-items: center; gap: 12px; padding: 15px 4px 0; font-size: .75rem; color: var(--text-muted); }
+    .feed-progress { height: 1px; flex: 1; background: rgba(45,28,28,.13); overflow: hidden; }
+    .feed-progress span { display: block; width: 100%; height: 100%; background: var(--accent-primary); transform-origin: left; transform: scaleX(.25); transition: transform .2s; }
+
+    /* ВИДЖЕТЫ И СТАРЫЕ СТИЛИ (временно для поиска) */
+    .widget { background: var(--bg-card); border-radius: var(--radius-lg); padding: 25px; box-shadow: var(--shadow-soft, 0 4px 20px rgba(0,0,0,0.03)); transition: all 0.3s ease; border: 1px solid transparent; }
 
     /* СЕТКА СВЕЖИХ МАТЕРИАЛОВ */
     .section-header { 
@@ -268,15 +257,12 @@ const heroPost = allPosts[0];
 <script>
     function initMainSearch() {
         const searchInput = document.getElementById('mainSearch') as HTMLInputElement;
-        const dashboard = document.getElementById('dashboard');
-        const heroColumn = document.getElementById('heroColumn');
+        const opening = document.querySelector('.opening') as HTMLElement;
         const mainGrid = document.getElementById('mainGrid');
         const sectionTitle = document.getElementById('sectionTitle');
         const noResultsMsg = document.getElementById('noResults');
-        const quoteWidget = document.querySelector('.quote-widget') as HTMLElement;
-        const tagsWidget = document.querySelector('.tags-widget') as HTMLElement;
 
-        if (!searchInput || !dashboard || !mainGrid) return;
+        if (!searchInput || !opening || !mainGrid) return;
 
         const freshInput = searchInput.cloneNode(true) as HTMLInputElement;
         searchInput.parentNode!.replaceChild(freshInput, searchInput);
@@ -288,17 +274,11 @@ const heroPost = allPosts[0];
 
             // === UI ===
             if (isSearching) {
-                dashboard.classList.add('is-searching');
-                if (sectionTitle) sectionTitle.classList.add('hidden');
-                if (heroColumn) heroColumn.style.display = 'none';
-                if (quoteWidget) quoteWidget.style.display = 'none';
-                if (tagsWidget) tagsWidget.style.display = 'none';
+                if (opening) opening.style.display = 'none';
+                if (sectionTitle) sectionTitle.style.display = 'none';
             } else {
-                dashboard.classList.remove('is-searching');
-                if (sectionTitle) sectionTitle.classList.remove('hidden');
-                if (heroColumn) heroColumn.style.display = '';
-                if (quoteWidget) quoteWidget.style.display = '';
-                if (tagsWidget) tagsWidget.style.display = '';
+                if (opening) opening.style.display = '';
+                if (sectionTitle) sectionTitle.style.display = '';
             }
 
             // === Фильтрация ===
@@ -341,6 +321,34 @@ const heroPost = allPosts[0];
                 noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
             }
         });
+
+        // Feed scroll behavior
+        const feedWindow = document.getElementById('feed-window');
+        const feedUp = document.getElementById('feed-up');
+        const feedDown = document.getElementById('feed-down');
+        const feedBar = document.getElementById('feed-bar');
+
+        if (feedWindow && feedUp && feedDown && feedBar) {
+            function updateFeedScroll() {
+                const scrollTop = feedWindow.scrollTop;
+                const maxScroll = feedWindow.scrollHeight - feedWindow.clientHeight;
+                const scrollPercent = maxScroll > 0 ? scrollTop / maxScroll : 0;
+                feedBar.style.transform = `scaleX(${scrollPercent})`;
+                feedUp.disabled = scrollTop < 10;
+                feedDown.disabled = scrollTop > maxScroll - 10;
+            }
+
+            feedUp.addEventListener('click', () => {
+                feedWindow.scrollBy({ top: -feedWindow.clientHeight * 0.72, behavior: 'smooth' });
+            });
+
+            feedDown.addEventListener('click', () => {
+                feedWindow.scrollBy({ top: feedWindow.clientHeight * 0.72, behavior: 'smooth' });
+            });
+
+            feedWindow.addEventListener('scroll', updateFeedScroll);
+            updateFeedScroll();
+        }
     }
 
     initMainSearch();

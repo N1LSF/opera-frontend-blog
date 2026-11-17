@@ -1,25 +1,25 @@
 ---
 import { sanityClient, urlFor } from '../lib/sanity';
+import { buildHomepageSections } from '../lib/homepage';
 import MainLayout from '../layouts/MainLayout.astro';
 
-// Настройки главной (цитата)
-const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
-  quoteText,
-  quoteAuthor
-}`);
+const [settings, allPosts] = await Promise.all([
+    sanityClient.fetch(`*[_type == "siteSettings"][0]{ feedDescription }`),
+    sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**"))] | order(publishedAt desc){
+      _id,
+      title,
+      slug,
+      publishedAt,
+      excerpt,
+      "categoryName": category->title,
+      "categorySlug": category->slug.current,
+      "authorName": author->name,
+      "composerName": composer->name,
+      mainImage
+    }`),
+]);
 
-const allPosts = await sanityClient.fetch(`*[_type == "post" && !(_id in path("drafts.**"))] | order(publishedAt desc){
-  title,
-  slug,
-  publishedAt,
-  excerpt,
-  "categoryName": category->title,
-  "authorName": author->name,
-  "composerName": composer->name,
-  mainImage
-}`);
-
-const heroPost = allPosts[0];
+const { heroPost, feedPosts, freshPosts } = buildHomepageSections(allPosts);
 ---
 <MainLayout title="Главная">
     <main class="content">
@@ -31,8 +31,8 @@ const heroPost = allPosts[0];
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="mainSearch" class="main-search-input" placeholder="Найти оперу, композитора, рубрику..." autocomplete="off">
-                <button type="button" class="search-btn" aria-label="Поиск">
+                <input type="text" id="mainSearch" class="main-search-input" placeholder="Поиск по статьям..." autocomplete="off">
+                <button type="submit" class="search-btn" aria-label="Найти статьи">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
             </form>
@@ -45,7 +45,7 @@ const heroPost = allPosts[0];
                     <a href={`/blog/${heroPost.slug?.current || '#'}/`} class="hero-link">
                         <div class="lead-media">
                             {heroPost.mainImage ? (
-                                <img src={urlFor(heroPost.mainImage).width(800).height(500).auto('format').url()} alt={heroPost.title} loading="eager" />
+                                <img src={urlFor(heroPost.mainImage).width(800).height(420).fit('crop').auto('format').url()} alt={heroPost.title} loading="eager" fetchpriority="high" />
                             ) : (
                                 <div style="width: 100%; height: 100%; background: #e8ded8;"></div>
                             )}
@@ -63,10 +63,10 @@ const heroPost = allPosts[0];
                                 {(heroPost.categoryName || heroPost.composerName) && heroPost.publishedAt && <span>•</span>}
                                 {heroPost.publishedAt && <span>{new Date(heroPost.publishedAt).toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' })}</span>}
                             </div>
-                            <button class="read-link">
+                            <span class="read-link">
                                 Читать статью
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                            </button>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </span>
                         </div>
                     </a>
                 )}
@@ -84,13 +84,13 @@ const heroPost = allPosts[0];
                         </button>
                     </div>
                 </header>
-                <p class="feed-note">Короткие заметки о либретто, текстах и их создателях</p>
+                <p class="feed-note">{settings?.feedDescription || 'Короткие заметки о либретто, текстах и их создателях'}</p>
                 <div class="feed-window" id="feed-window">
-                    {allPosts.slice(0, 6).map((post) => (
+                    {feedPosts.map((post) => (
                         <article class="feed-item">
                             <a href={`/blog/${post.slug?.current || '#'}/`}>
                                 {post.mainImage && (
-                                    <img class="feed-thumb" src={urlFor(post.mainImage).width(60).height(80).auto('format').url()} alt="" />
+                                    <img class="feed-thumb" src={urlFor(post.mainImage).width(120).height(144).fit('crop').auto('format').url()} alt="" loading="lazy" />
                                 )}
                                 <div>
                                     <h3>{post.title}</h3>
@@ -99,11 +99,12 @@ const heroPost = allPosts[0];
                             </a>
                         </article>
                     ))}
+                    {feedPosts.length === 0 && <p class="feed-empty">В этой рубрике пока нет опубликованных статей.</p>}
                 </div>
                 <footer class="feed-footer">
-                    <span id="feed-count">1–3 из 6</span>
-                    <div class="feed-progress">
-                        <span id="feed-bar" style="transform:scaleX(.25)"></span>
+                    <span id="feed-count">{feedPosts.length ? `1–${Math.min(3, feedPosts.length)} из ${feedPosts.length}` : '0 из 0'}</span>
+                    <div class="feed-progress" aria-hidden="true">
+                        <span id="feed-bar"></span>
                     </div>
                 </footer>
             </aside>
@@ -114,9 +115,9 @@ const heroPost = allPosts[0];
         </div>
 
         <div class="articles-grid" id="mainGrid">
-            {allPosts.map((post, index) => (
-                <article 
-                    class={`article-card ${index === 0 ? 'hero-duplicate' : ''}`}
+            {freshPosts.map((post) => (
+                <article
+                    class="article-card"
                     data-title={post.title}
                     data-author={post.authorName || ''}
                     data-composer={post.composerName || ''}
@@ -125,7 +126,7 @@ const heroPost = allPosts[0];
                     {post.mainImage && (
                         <a href={`/blog/${post.slug?.current || '#'}/`}>
                             <div class="article-image">
-                                <img src={urlFor(post.mainImage).width(400).height(260).auto('format').url()} alt={post.title} loading="lazy" />
+                                <img src={urlFor(post.mainImage).width(560).height(336).fit('crop').auto('format').url()} alt={post.title} loading="lazy" />
                             </div>
                         </a>
                     )}
@@ -138,7 +139,7 @@ const heroPost = allPosts[0];
                     </div>
                 </article>
             ))}
-            
+
             <div id="noResults" style="display: none; grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted); font-size: 1.2rem;">
                 По вашему запросу ничего не найдено 😔
             </div>
@@ -148,47 +149,47 @@ const heroPost = allPosts[0];
 </MainLayout>
 
 <style>
-    .content { padding: 40px 60px; }
+    .content { padding: 32px 44px 56px; }
 
     /* ПОИСК */
-    .utility-bar { display: grid; grid-template-columns: 1fr; gap: 28px; margin-bottom: 26px; }
-    .search-widget { 
-        display: flex; 
-        align-items: center; 
-        gap: 0; 
+    .utility-bar { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; }
+    .search-widget {
+        display: flex;
+        align-items: center;
+        gap: 0;
         background: var(--bg-card);
         border: 1px solid rgba(128,37,37,.18);
-        border-radius: var(--radius-lg);
-        padding: 12px 20px;
+        border-radius: 18px;
+        padding: 9px 10px 9px 18px;
         position: relative;
     }
-    .search-icon { 
+    .search-icon {
         color: var(--text-muted);
         flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
     }
-    .main-search-input { 
+    .main-search-input {
         flex: 1;
         padding: 10px 16px 10px 12px;
-        border: none; 
-        background: transparent; 
-        font-family: var(--font-body); 
-        font-size: 1rem; 
-        outline: none; 
+        border: none;
+        background: transparent;
+        font-family: var(--font-body);
+        font-size: 1rem;
+        outline: none;
         color: var(--text-main);
     }
     .main-search-input::placeholder {
         color: var(--text-muted);
     }
     .search-btn {
-        width: 38px;
-        height: 38px;
+        width: 44px;
+        height: 44px;
         border: 0;
         background: var(--accent-primary);
         color: #fff;
-        border-radius: 10px;
+        border-radius: 50%;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -201,123 +202,128 @@ const heroPost = allPosts[0];
     }
 
     /* ГЛАВНАЯ СТАТЬЯ И ЛЕНТА */
-    .opening { 
-        display: grid; 
-        grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); 
-        gap: 32px; 
-        align-items: stretch; 
-        height: 580px; 
-        margin-bottom: 60px; 
+    .opening {
+        display: grid;
+        grid-template-columns: minmax(0, 1.85fr) minmax(290px, 1fr);
+        gap: 24px;
+        align-items: stretch;
+        height: 470px;
+        margin-bottom: 40px;
     }
-    .framed { 
-        position: relative; 
-        background: var(--bg-card); 
+    .framed {
+        position: relative;
+        background: var(--bg-card);
         border: 1px solid rgba(128,37,37,.18);
         box-shadow: 0 4px 20px rgba(0,0,0,.03);
         border-radius: var(--radius-lg);
     }
-    
-    .lead-story { 
-        min-width: 0; 
-        display: flex; 
-        flex-direction: column; 
-        overflow: hidden; 
+
+    .lead-story {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
     .lead-story .hero-link {
         display: flex;
         flex-direction: column;
         height: 100%;
     }
-    .lead-media { 
-        position: relative; 
-        height: auto; 
-        min-height: 280px; 
-        flex: 1; 
-        margin: 12px 12px 0; 
-        overflow: hidden; 
-        border-radius: 20px; 
-        background: #e8ded8; 
+    .lead-media {
+        position: relative;
+        height: auto;
+        min-height: 160px;
+        flex: 1;
+        margin: 10px 10px 0;
+        overflow: hidden;
+        border-radius: 18px;
+        background: #e8ded8;
     }
-    .lead-media:after { 
-        content: ""; 
-        position: absolute; 
-        inset: 0; 
+    .lead-media:after {
+        content: "";
+        position: absolute;
+        inset: 0;
         background: linear-gradient(180deg, rgba(20,8,8,.04) 55%, rgba(20,8,8,.4));
-        pointer-events: none; 
+        pointer-events: none;
         z-index: 1;
     }
-    .lead-media img { 
-        width: 100%; 
-        height: 100%; 
-        object-fit: cover; 
-        object-position: 50% 35%; 
+    .lead-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 35%;
         transition: transform .7s cubic-bezier(.16,1,.3,1);
     }
-    .lead-story:hover .lead-media img { 
-        transform: scale(1.06); 
+    .lead-story:hover .lead-media img {
+        transform: scale(1.06);
     }
-    .fresh-label { 
-        position: absolute; 
-        left: 18px; 
-        top: 18px; 
-        z-index: 2; 
-        background: var(--accent-primary); 
-        color: #fff; 
-        padding: 8px 14px; 
-        border-radius: 999px; 
-        font-size: .75rem; 
-        font-weight: 600; 
-        letter-spacing: .06em; 
-        text-transform: uppercase; 
+    .fresh-label {
+        position: absolute;
+        left: 18px;
+        top: 18px;
+        z-index: 2;
+        background: var(--accent-primary);
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: .75rem;
+        font-weight: 600;
+        letter-spacing: .06em;
+        text-transform: uppercase;
     }
-    .lead-body { 
-        padding: 22px 28px 24px; 
-        display: flex; 
-        flex-direction: column; 
-        gap: 10px;
+    .lead-body {
+        padding: 18px 22px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex-shrink: 0;
     }
-    .lead-body h1 { 
-        font-family: var(--font-head); 
-        font-size: clamp(1.8rem, 4vw, 2.4rem);
-        font-weight: 400; 
-        line-height: 1.1; 
+    .lead-body h1 {
+        font-family: var(--font-head);
+        font-size: clamp(1.55rem, 2.2vw, 2rem);
+        font-weight: 400;
+        line-height: 1.14;
         letter-spacing: -.02em;
-        text-wrap: balance; 
+        text-wrap: balance;
         color: var(--text-main);
         margin: 0;
     }
-    .lead-excerpt { 
-        font-size: .95rem; 
-        line-height: 1.5; 
+    .lead-excerpt {
+        font-size: .9rem;
+        line-height: 1.45;
         color: var(--text-muted);
         margin: 0;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
     }
-    .story-meta { 
-        display: flex; 
-        align-items: center; 
-        flex-wrap: wrap; 
-        gap: 8px 12px; 
-        font-size: .8rem; 
+    .story-meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px 10px;
+        font-size: .8rem;
         color: var(--text-muted);
-        padding-top: 8px;
+        padding-top: 6px;
         border-top: 1px solid rgba(45,28,28,.13);
         margin: 0;
     }
-    .story-meta span:first-child { 
-        color: var(--accent-primary); 
-        font-weight: 600; 
+    .story-meta span:first-child {
+        color: var(--accent-primary);
+        font-weight: 600;
     }
-    .read-link { 
-        display: inline-flex; 
-        align-items: center; 
-        gap: 10px; 
-        background: var(--accent-primary); 
-        color: #fff; 
-        padding: 0 22px;
-        border-radius: 999px; 
-        font-weight: 600; 
-        font-size: .95rem; 
-        width: max-content; 
+    .read-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--accent-primary);
+        color: #fff;
+        padding: 0 18px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: .88rem;
+        width: max-content;
         min-height: 44px;
         border: 0;
         cursor: pointer;
@@ -325,169 +331,176 @@ const heroPost = allPosts[0];
         font-family: var(--font-body);
         margin-top: auto;
     }
-    .read-link:hover { 
+    .read-link:hover {
         background: #5E1818;
         transform: translateY(-2px);
     }
-    .read-link svg { 
-        width: 16px; 
+    .read-link svg {
+        width: 16px;
         height: 16px;
     }
 
     /* ЛЕНТА "ЧИТАЯ ЛИБРЕТТО" */
-    .feed-panel { 
-        display: flex; 
-        flex-direction: column; 
-        min-width: 0; 
+    .feed-panel {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
         overflow: hidden;
-        padding: 24px 20px 16px; 
+        padding: 20px 18px 14px;
         background: #fff;
     }
-    .feed-heading { 
-        display: flex; 
-        align-items: center; 
-        justify-content: space-between; 
-        gap: 12px; 
-        margin-bottom: 12px;
+    .feed-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
     }
-    .feed-heading h2 { 
-        font-family: var(--font-head); 
-        font-weight: 400; 
+    .feed-heading h2 {
+        font-family: var(--font-head);
+        font-weight: 400;
         letter-spacing: -.025em;
-        font-size: 1.5rem;
+        font-size: 1.35rem;
         color: var(--accent-primary);
         margin: 0;
     }
-    .feed-note { 
-        font-size: .85rem; 
-        color: var(--text-muted); 
-        padding: 0 4px 12px;
+    .feed-note {
+        font-size: .85rem;
+        line-height: 1.45;
+        color: var(--text-muted);
+        padding: 0 4px 10px;
         margin: 0;
     }
-    .feed-controls { 
-        display: flex; 
-        gap: 0; 
+    .feed-controls {
+        display: flex;
+        gap: 0;
         border: 1px solid rgba(128,37,37,.18);
-        border-radius: 999px; 
-        overflow: hidden; 
+        border-radius: 999px;
+        overflow: hidden;
     }
-    .feed-button { 
-        width: 38px; 
-        height: 38px; 
-        border: 0; 
-        background: transparent; 
-        color: var(--accent-primary); 
+    .feed-button {
+        width: 44px;
+        height: 44px;
+        border: 0;
+        background: transparent;
+        color: var(--accent-primary);
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer; 
+        cursor: pointer;
         transition: background .2s;
         flex-shrink: 0;
     }
-    .feed-button:hover { 
+    .feed-button:hover {
         background: #FDF2F2;
     }
-    .feed-button:disabled { 
-        opacity: .3; 
-        cursor: default; 
+    .feed-button:disabled {
+        opacity: .3;
+        cursor: default;
     }
-    .feed-button svg { 
-        width: 16px; 
-        height: 16px; 
+    .feed-button svg {
+        width: 16px;
+        height: 16px;
     }
-    .feed-window { 
-        flex: 1; 
-        overflow-y: auto; 
+    .feed-window {
+        flex: 1;
+        overflow-y: auto;
         padding-left: 12px;
         mask-image: linear-gradient(to bottom, #000 96%, transparent);
         position: relative;
     }
-    .feed-window:before { 
-        content: ""; 
-        position: absolute; 
-        left: 0; 
-        top: 0; 
+    .feed-window:before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
         bottom: 0;
-        width: 1px; 
+        width: 1px;
         background: rgba(128,37,37,.18);
     }
-    .feed-item { 
-        position: relative; 
+    .feed-empty {
+        padding: 24px 8px 24px 16px;
+        color: var(--text-muted);
+        font-size: .9rem;
+        line-height: 1.5;
+    }
+    .feed-item {
+        position: relative;
         border-top: 1px solid rgba(45,28,28,.08);
         padding-left: 12px;
     }
-    .feed-item:first-child { 
-        border-top: 0; 
+    .feed-item:first-child {
+        border-top: 0;
     }
-    .feed-item:before { 
-        content: ""; 
-        position: absolute; 
-        left: -7px; 
-        top: 22px; 
-        width: 7px; 
+    .feed-item:before {
+        content: "";
+        position: absolute;
+        left: -7px;
+        top: 22px;
+        width: 7px;
         height: 7px;
-        border: 1.5px solid var(--accent-primary); 
-        background: #fff; 
+        border: 1.5px solid var(--accent-primary);
+        background: #fff;
         border-radius: 50%;
         z-index: 2;
     }
-    .feed-item a { 
-        display: grid; 
-        grid-template-columns: 52px minmax(0, 1fr); 
-        gap: 12px; 
-        padding: 14px 4px;
-        align-items: start; 
-        text-decoration: none; 
+    .feed-item a {
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr);
+        gap: 10px;
+        padding: 10px 4px;
+        align-items: start;
+        text-decoration: none;
     }
-    .feed-thumb { 
-        width: 52px; 
-        height: 64px; 
+    .feed-thumb {
+        width: 48px;
+        height: 58px;
         object-fit: cover;
         object-position: 50% 25%;
         border-radius: 6px;
-        filter: saturate(.8); 
+        filter: saturate(.8);
         transition: filter .3s, transform .3s;
     }
-    .feed-item a:hover .feed-thumb { 
+    .feed-item a:hover .feed-thumb {
         filter: saturate(1.1);
         transform: translateY(-2px);
     }
-    .feed-item h3 { 
-        font-family: var(--font-head); 
-        font-size: .95rem; 
+    .feed-item h3 {
+        font-family: var(--font-head);
+        font-size: .9rem;
         font-weight: 400;
-        line-height: 1.2; 
-        margin: 2px 0 6px;
+        line-height: 1.25;
+        margin: 0 0 4px;
         text-wrap: pretty;
         transition: color .2s;
         color: var(--text-main);
     }
-    .feed-item a:hover h3 { 
+    .feed-item a:hover h3 {
         color: var(--accent-primary);
     }
-    .feed-item time { 
-        font-size: .75rem; 
+    .feed-item time {
+        font-size: .75rem;
         color: var(--text-muted);
     }
-    .feed-footer { 
-        display: flex; 
-        align-items: center; 
-        gap: 10px; 
+    .feed-footer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
         padding: 12px 4px 0;
         font-size: .75rem;
         color: var(--text-muted);
         border-top: 1px solid rgba(45,28,28,.08);
         margin-top: 8px;
     }
-    .feed-progress { 
-        height: 2px; 
-        flex: 1; 
+    .feed-progress {
+        height: 2px;
+        flex: 1;
         background: rgba(128,37,37,.08);
         border-radius: 1px;
     }
-    .feed-progress span { 
-        display: block; 
-        height: 100%; 
+    .feed-progress span {
+        display: block;
+        height: 100%;
         background: var(--accent-primary);
         border-radius: 1px;
         transform-origin: left;
@@ -496,56 +509,56 @@ const heroPost = allPosts[0];
     }
 
     /* СЕТКА СВЕЖИХ МАТЕРИАЛОВ */
-    .section-header { 
-        margin-bottom: 30px; 
-        border-bottom: 2px solid rgba(0,0,0,0.03); 
-        padding-bottom: 15px; 
-        overflow: hidden; 
-        max-height: 100px; 
-        opacity: 1; 
-        transition: all 0.4s ease; 
+    .section-header {
+        margin-bottom: 22px;
+        border-bottom: 2px solid rgba(0,0,0,0.03);
+        padding-bottom: 12px;
+        overflow: hidden;
+        max-height: 100px;
+        opacity: 1;
+        transition: all 0.4s ease;
     }
     .section-header.hidden { max-height: 0; opacity: 0; margin: 0; padding: 0; border: none; }
-    .section-title { font-family: var(--font-head); font-size: 2rem; color: var(--text-main); }
-    
-    .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
-    
-    .hero-duplicate { display: none; }
+    .section-title { font-family: var(--font-head); font-size: 1.75rem; color: var(--text-main); }
 
-    .article-card { background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-soft, 0 4px 20px rgba(0,0,0,0.03)); transition: 0.3s; display: flex; flex-direction: column; }
-    .article-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.08); }
-    .article-image { height: 200px; overflow: hidden; }
-    .article-image img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-    .article-card:hover .article-image img { transform: scale(1.05); }
-    .article-body { padding: 25px; display: flex; flex-direction: column; flex-grow: 1; }
-    .card-category { font-size: 0.75rem; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 10px; }
-    .article-title { font-family: var(--font-head); font-size: 1.3rem; margin-bottom: 15px; line-height: 1.3; }
+    .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 22px; }
+
+    .article-card { background: var(--bg-card); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-soft, 0 4px 20px rgba(0,0,0,0.03)); transition: 0.3s; display: flex; flex-direction: column; }
+    .article-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+    .article-image { aspect-ratio: 5 / 3; overflow: hidden; }
+    .article-image img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; display: block; }
+    .article-card:hover .article-image img { transform: scale(1.04); }
+    .article-body { padding: 18px; display: flex; flex-direction: column; flex-grow: 1; }
+    .card-category { font-size: .72rem; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 8px; }
+    .article-title { font-family: var(--font-head); font-size: 1.12rem; margin-bottom: 12px; line-height: 1.35; }
     .article-title a { color: var(--text-main); transition: color 0.2s; }
     .article-title a:hover { color: var(--accent-primary); }
-    .article-footer { margin-top: auto; font-size: 0.85rem; color: var(--text-muted); padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); }
+    .article-footer { margin-top: auto; font-size: .8rem; color: var(--text-muted); padding-top: 14px; border-top: 1px solid rgba(0,0,0,0.05); }
 
     /* АДАПТИВ */
     @media (max-width: 1000px) {
-        .content { padding: 30px 20px; }
+        .content { padding: 28px 24px 48px; }
         .opening { grid-template-columns: 1fr; gap: 20px; height: auto; }
         .lead-story { order: 1; }
-        .feed-panel { order: 2; }
-        .lead-media { min-height: 250px; }
+        .feed-panel { order: 2; max-height: 440px; }
+        .lead-media { min-height: 220px; }
         .lead-body { min-width: 0; }
         .lead-body h1 { font-size: clamp(1.6rem, 4vw, 2rem); }
+        .feed-window { min-height: 180px; }
     }
     @media (max-width: 768px) {
-        .content { padding: 20px 15px; }
+        .content { padding: 20px 16px 40px; }
         .opening { grid-template-columns: 1fr; gap: 16px; }
-        .lead-body { padding: 20px 24px 24px; }
-        .lead-body h1 { font-size: 1.6rem; }
-        .lead-excerpt { font-size: .9rem; }
+        .lead-media { min-height: 190px; }
+        .lead-body { padding: 18px 20px 20px; }
+        .lead-body h1 { font-size: 1.5rem; }
+        .lead-excerpt { font-size: .92rem; }
         .main-search-input { font-size: 16px; }
-        .search-widget { padding: 10px 16px; }
-        .feed-heading h2 { font-size: 1.3rem; }
-        .feed-item a { grid-template-columns: 48px minmax(0, 1fr); gap: 10px; }
-        .feed-thumb { width: 48px; height: 60px; }
+        .search-widget { padding: 8px 9px 8px 14px; }
+        .feed-heading h2 { font-size: 1.25rem; }
         .feed-item h3 { font-size: .9rem; }
+        .articles-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+        .section-title { font-size: 1.55rem; }
     }
 </style>
 
@@ -561,6 +574,13 @@ const heroPost = allPosts[0];
 
         const freshInput = searchInput.cloneNode(true) as HTMLInputElement;
         searchInput.parentNode!.replaceChild(freshInput, searchInput);
+
+        const searchForm = document.getElementById('searchForm');
+        searchForm?.addEventListener('submit', (event) => {
+            event.preventDefault();
+            freshInput.dispatchEvent(new Event('input', { bubbles: true }));
+            freshInput.focus();
+        });
 
         freshInput.addEventListener('input', () => {
             const query = freshInput.value.trim().toLowerCase();
@@ -579,12 +599,7 @@ const heroPost = allPosts[0];
             // === Фильтрация ===
             if (!isSearching) {
                 cards.forEach((card) => {
-                    const el = card as HTMLElement;
-                    if (el.classList.contains('hero-duplicate')) {
-                        el.style.display = 'none';
-                    } else {
-                        el.style.display = '';
-                    }
+                    (card as HTMLElement).style.display = '';
                 });
                 if (noResultsMsg) noResultsMsg.style.display = 'none';
                 return;
@@ -619,18 +634,36 @@ const heroPost = allPosts[0];
 
         // Feed scroll behavior
         const feedWindow = document.getElementById('feed-window');
-        const feedUp = document.getElementById('feed-up');
-        const feedDown = document.getElementById('feed-down');
+        const feedUp = document.getElementById('feed-up') as HTMLButtonElement;
+        const feedDown = document.getElementById('feed-down') as HTMLButtonElement;
         const feedBar = document.getElementById('feed-bar');
+        const feedCount = document.getElementById('feed-count');
 
         if (feedWindow && feedUp && feedDown && feedBar) {
+            const feedItems = Array.from(feedWindow.querySelectorAll('.feed-item'));
+
             function updateFeedScroll() {
                 const scrollTop = feedWindow.scrollTop;
-                const maxScroll = feedWindow.scrollHeight - feedWindow.clientHeight;
-                const scrollPercent = maxScroll > 0 ? scrollTop / maxScroll : 0;
+                const maxScroll = Math.max(0, feedWindow.scrollHeight - feedWindow.clientHeight);
+                const scrollPercent = maxScroll > 0 ? scrollTop / maxScroll : 1;
                 feedBar.style.transform = `scaleX(${scrollPercent})`;
                 feedUp.disabled = scrollTop < 10;
-                feedDown.disabled = scrollTop > maxScroll - 10;
+                feedDown.disabled = maxScroll <= 0 || scrollTop > maxScroll - 10;
+
+                if (feedCount) {
+                    const frame = feedWindow.getBoundingClientRect();
+                    const visibleIndexes = feedItems
+                        .map((item, index) => ({ item, index }))
+                        .filter(({ item }) => {
+                            const rect = item.getBoundingClientRect();
+                            return rect.bottom > frame.top + 4 && rect.top < frame.bottom - 4;
+                        })
+                        .map(({ index }) => index);
+
+                    feedCount.textContent = visibleIndexes.length
+                        ? `${visibleIndexes[0] + 1}–${visibleIndexes[visibleIndexes.length - 1] + 1} из ${feedItems.length}`
+                        : `0 из ${feedItems.length}`;
+                }
             }
 
             feedUp.addEventListener('click', () => {

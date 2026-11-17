@@ -1,6 +1,7 @@
 ---
 import { ViewTransitions } from 'astro:transitions';
 import { sanityClient } from '../lib/sanity';
+import SocialLinks from '../components/SocialLinks.astro';
 
 const { title } = Astro.props;
 const currentPath = Astro.url.pathname;
@@ -540,19 +541,8 @@ const categories = await sanityClient.fetch(`*[_type == "category"] | order(orde
                     {settings.contactEmail}
                 </a>
             )}
-            {settings?.socialLinks && settings.socialLinks.length > 0 && (
-                <>
-                    {settings.contactEmail && <span class="footer-dot"></span>}
-                    {settings.socialLinks.map((s: any, i: number) => (
-                        <>
-                            {i > 0 && <span class="footer-dot"></span>}
-                            <a href={s.url} target="_blank" rel="noopener noreferrer" class="footer-social-link">
-                                {s.platform}
-                            </a>
-                        </>
-                    ))}
-                </>
-            )}
+            {settings?.contactEmail && <span class="footer-dot"></span>}
+            <SocialLinks links={settings?.socialLinks} variant="footer" />
         </div>
 
         {settings?.footerLinks && settings.footerLinks.length > 0 && (

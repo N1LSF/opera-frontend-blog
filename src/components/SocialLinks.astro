@@ -1,0 +1,92 @@
+---
+import { getSocialLinks } from '../lib/socialLinks';
+
+const { links = [], variant = 'default' } = Astro.props;
+const socialLinks = getSocialLinks(links).map((link) => ({
+    ...link,
+    kind: link.url.includes('t.me/') || link.url.includes('telegram.me/')
+        ? 'telegram'
+        : link.url.includes('max.ru/') ? 'max' : 'external',
+}));
+---
+
+<nav class={`social-links social-links--${variant}`} aria-label="Каналы проекта">
+    {socialLinks.map((link) => (
+        <a
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-link"
+            aria-label={link.platform}
+            title={link.platform}
+        >
+            {link.kind === 'telegram' ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m22 2-7 20-4-9-9-4Z" />
+                    <path d="M22 2 11 13" />
+                </svg>
+            ) : link.kind === 'max' ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 11.5a8 8 0 0 1-11.8 7L3 20l1.5-5.2A8 8 0 1 1 20 11.5Z" />
+                    <path d="m7.5 14.5 1-5 3.5 3 3.5-3 1 5" />
+                </svg>
+            ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1" />
+                    <path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1" />
+                </svg>
+            )}
+        </a>
+    ))}
+</nav>
+
+<style>
+    .social-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .social-link {
+        width: 44px;
+        height: 44px;
+        flex: 0 0 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1px solid rgba(128, 37, 37, .14);
+        background: var(--accent-light);
+        color: var(--accent-primary);
+        transition: color .2s ease, background .2s ease, border-color .2s ease, transform .2s ease;
+    }
+
+    .social-link:hover {
+        background: var(--accent-primary);
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    .social-link:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 3px;
+    }
+
+    .social-link svg {
+        width: 21px;
+        height: 21px;
+    }
+
+    .social-links--footer .social-link {
+        color: #fff;
+        background: rgba(255, 255, 255, .08);
+        border-color: rgba(255, 255, 255, .22);
+    }
+
+    .social-links--footer .social-link:hover {
+        color: var(--accent-primary);
+        background: #fff;
+        border-color: #fff;
+    }
+</style>

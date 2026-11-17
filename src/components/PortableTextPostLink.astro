@@ -1,0 +1,14 @@
+---
+const { node } = Astro.props;
+const markDef = node?.markDef || {};
+const slug = markDef.postSlug;
+const title = markDef.postTitle;
+---
+
+{slug ? (
+    <a href={`/blog/${slug}/`} class="internal-post-link" title={title ? `Перейти к статье: ${title}` : undefined}>
+        <slot />
+    </a>
+) : (
+    <span><slot /></span>
+)}

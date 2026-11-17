@@ -1,6 +1,7 @@
 ---
 import { sanityClient } from '../lib/sanity';
 import MainLayout from '../layouts/MainLayout.astro';
+import SocialLinks from '../components/SocialLinks.astro';
 
 const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
   contactEmail,
@@ -24,15 +25,7 @@ const settings = await sanityClient.fetch(`*[_type == "siteSettings"][0]{
                 </a>
             )}
 
-            {settings?.socialLinks && settings.socialLinks.length > 0 && (
-                <div class="social-links">
-                    {settings.socialLinks.map((s: any) => (
-                        <a href={s.url} target="_blank" rel="noopener noreferrer" class="social-link">
-                            {s.platform}
-                        </a>
-                    ))}
-                </div>
-            )}
+            <SocialLinks links={settings?.socialLinks} />
         </div>
     </main>
 </MainLayout>

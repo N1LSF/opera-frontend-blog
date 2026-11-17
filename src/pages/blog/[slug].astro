@@ -7,6 +7,7 @@ import { PortableText } from 'astro-portabletext';
 import PortableTextImage from '../../components/PortableTextImage.astro';
 import GlossaryTooltip from '../../components/GlossaryTooltip.astro';
 import PortableTextFile from '../../components/PortableTextFile.astro';
+import PortableTextPostLink from '../../components/PortableTextPostLink.astro';
 
 const customComponents = {
   type: {
@@ -15,6 +16,7 @@ const customComponents = {
   },
   mark: {
     glossaryTooltip: GlossaryTooltip,
+    postLink: PortableTextPostLink,
   }
 };
 
@@ -46,6 +48,11 @@ const post = await sanityClient.fetch(`*[_type == "post" && slug.current == $slu
         ...,
         "term": reference->term,
         "definition": reference->definition
+        },
+        _type == "postLink" => {
+        ...,
+        "postSlug": reference->slug.current,
+        "postTitle": reference->title
         }
     }
     },
@@ -78,13 +85,13 @@ const hasAttachment = post.attachment && post.attachment.url;
 
 <MainLayout title={post.title}>
     <article class="article-container">
-        
+
         <header class="article-header">
             {post.categoryTitle && (
                 <div class="category-tag">{post.categoryTitle}</div>
             )}
             <h1 class="article-main-title">{post.title}</h1>
-            
+
             <div class="article-meta">
                 <div class="meta-author">
                     {post.authorImage ? (
@@ -103,10 +110,10 @@ const hasAttachment = post.attachment && post.attachment.url;
 
         {post.mainImage && (
             <div class="article-hero-image">
-                <img 
-                    src={urlFor(post.mainImage).width(1200).auto('format').url()} 
+                <img
+                    src={urlFor(post.mainImage).width(1200).height(675).fit('crop').auto('format').url()}
                     alt={post.title}
-                    loading="eager" 
+                    loading="eager"
                 />
             </div>
         )}
@@ -120,9 +127,9 @@ const hasAttachment = post.attachment && post.attachment.url;
         </div>
 
         {hasAttachment && (
-            <a 
-                href={post.attachment.url} 
-                class="attachment-card" 
+            <a
+                href={post.attachment.url}
+                class="attachment-card"
                 download={post.attachment.filename}
                 target="_blank"
                 rel="noopener"
@@ -152,97 +159,99 @@ const hasAttachment = post.attachment && post.attachment.url;
                 </div>
             </a>
         )}
-        
+
     </article>
 </MainLayout>
 
 <style>
-    .article-container { 
-        width: 100%; 
-        max-width: 760px; 
-        margin: 0 auto; 
-        padding: 0 20px 100px; 
+    .article-container {
+        width: 100%;
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 0 20px 100px;
     }
-    
-    .article-header { 
-        margin-bottom: 50px; 
-        text-align: center; 
+
+    .article-header {
+        margin-bottom: 50px;
+        text-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
     }
-    
-    .category-tag { 
-        display: inline-block; 
-        color: var(--accent-primary); 
-        font-size: 0.85rem; 
-        font-weight: 600; 
-        text-transform: uppercase; 
-        letter-spacing: 2px; 
-        margin-bottom: 20px; 
+
+    .category-tag {
+        display: inline-block;
+        color: var(--accent-primary);
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 20px;
     }
-    
-    .article-main-title { 
-        font-family: var(--font-head); 
-        font-size: 3.5rem; 
-        line-height: 1.15; 
-        margin-bottom: 35px; 
-        color: var(--text-main); 
+
+    .article-main-title {
+        font-family: var(--font-head);
+        font-size: 3.5rem;
+        line-height: 1.15;
+        margin-bottom: 35px;
+        color: var(--text-main);
         font-weight: 400;
     }
-    
-    .article-meta { 
-        display: flex; 
-        align-items: center; 
-        gap: 15px; 
+
+    .article-meta {
+        display: flex;
+        align-items: center;
+        gap: 15px;
         font-family: var(--font-body);
-        font-size: 1rem; 
-        color: var(--text-muted); 
+        font-size: 1rem;
+        color: var(--text-muted);
     }
-    
-    .meta-author { 
-        display: flex; 
-        align-items: center; 
-        gap: 12px; 
-        font-weight: 500; 
-        color: var(--text-main); 
+
+    .meta-author {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+        color: var(--text-main);
     }
-    
-    .author-avatar { 
-        width: 40px; 
-        height: 40px; 
-        border-radius: 50%; 
-        object-fit: cover; 
+
+    .author-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
     }
-    
-    .author-avatar-placeholder { 
-        width: 40px; 
-        height: 40px; 
-        border-radius: 50%; 
-        background: #e0e0e0; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        font-size: 1.2rem; 
+
+    .author-avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
     }
 
     .meta-dot {
         font-size: 1.2rem;
         line-height: 0;
     }
-    
-    .article-hero-image { 
-        width: 100%; 
-        margin-bottom: 60px; 
+
+    .article-hero-image {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        margin-bottom: 60px;
         border-radius: 24px;
-        overflow: hidden; 
-        box-shadow: 0 10px 40px rgba(0,0,0,0.04); 
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.04);
     }
-    
-    .article-hero-image img { 
-        width: 100%; 
-        height: auto; 
-        display: block; 
+
+    .article-hero-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
     }
 
     /* === Карточка прикреплённого файла === */
@@ -259,7 +268,7 @@ const hasAttachment = post.attachment && post.attachment.url;
         color: var(--text-main);
         position: relative;
         z-index: 1;
-        transition: 
+        transition:
             transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
             box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
             border-color 0.4s ease,
@@ -338,7 +347,7 @@ const hasAttachment = post.attachment && post.attachment.url;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: 
+        transition:
             background 0.4s ease,
             transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     }
@@ -416,11 +425,11 @@ const hasAttachment = post.attachment && post.attachment.url;
     .editorial-content li { margin-bottom: 0.6em; position: relative; text-align: left; }
     .editorial-content ul li::before { content: "•"; color: var(--accent-primary); font-weight: bold; position: absolute; left: -1em; }
     .editorial-content blockquote { margin: 1.5em 0; padding: 0 0 0 1.5em; border-left: 3px solid var(--accent-primary); font-style: italic; font-family: var(--font-head); font-size: 1.4rem; color: #555; line-height: 1.6; text-align: left; }
-    
+
     .editorial-content blockquote p:empty { display: none; }
     .editorial-content blockquote p:first-child { margin-top: 0; }
     .editorial-content blockquote p:last-child { margin-bottom: 0; }
-    
+
     .editorial-content a { color: var(--accent-primary); text-decoration: none; border-bottom: 1px solid rgba(128, 37, 37, 0.3); transition: 0.2s; }
     .editorial-content a:hover { border-bottom-color: var(--accent-primary); background-color: rgba(128, 37, 37, 0.05); }
 
@@ -456,12 +465,12 @@ const hasAttachment = post.attachment && post.attachment.url;
 <script>
     function initTooltips() {
         const tooltips = document.querySelectorAll('.glossary-tooltip');
-        
+
         tooltips.forEach(tip => {
             tip.addEventListener('click', (e) => {
                 if (window.innerWidth > 768) return;
                 e.preventDefault();
-                
+
                 tooltips.forEach(t => t.classList.remove('active'));
                 tip.classList.toggle('active');
             });

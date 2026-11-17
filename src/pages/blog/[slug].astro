@@ -1,7 +1,7 @@
 ---
 export const prerender = true;
 
-import { sanityClient, urlFor } from '../../lib/sanity';
+import { sanityClient, urlFor, articleImageUrl } from '../../lib/sanity';
 import MainLayout from '../../layouts/MainLayout.astro';
 import { PortableText } from 'astro-portabletext';
 import PortableTextImage from '../../components/PortableTextImage.astro';
@@ -111,7 +111,7 @@ const hasAttachment = post.attachment && post.attachment.url;
         {post.mainImage && (
             <div class="article-hero-image">
                 <img
-                    src={urlFor(post.mainImage).width(1200).height(675).fit('crop').auto('format').url()}
+                    src={articleImageUrl(post.mainImage, 1200)}
                     alt={post.title}
                     loading="eager"
                 />

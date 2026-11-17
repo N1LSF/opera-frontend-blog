@@ -15,6 +15,15 @@ export function urlFor(source) {
   return builder.image(source);
 }
 
+export function articleImageUrl(source, width = 1200) {
+  return urlFor(source)
+    .width(width)
+    .height(Math.round(width * 9 / 16))
+    .fit('crop')
+    .auto('format')
+    .url();
+}
+
 /**
  * Превращает _ref ассета файла Sanity в прямой URL для скачивания.
  * Пример _ref: "file-abc123def456-pdf"

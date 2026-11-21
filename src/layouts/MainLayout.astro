@@ -31,15 +31,87 @@ const categories = await sanityClient.fetch(`*[_type == "category"] | order(orde
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title} | Опера глазами читателя</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Подробные статьи о сюжетах опер, либретто, истории создания и композиторах. Гид по оперным произведениям от Пуччини до Верди.">
+    <meta name="keywords" content="опера, либретто, сюжеты опер, композиторы, оперные произведения, Пуччини, Верди, музыка">
+    <meta name="author" content="Опера глазами читателя">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="google-site-verification" content="">
+    <meta name="language" content="Russian">
+    <meta name="revisit-after" content="7 days">
+    
+    <!-- Canonical Link -->
+    <link rel="canonical" href={`https://opera-read.ru${currentPath}`}>
+    
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content={`${title} | Опера глазами читателя`}>
+    <meta property="og:description" content="Подробные статьи о сюжетах опер, либретто и истории создания великих произведений">
+    <meta property="og:url" content={`https://opera-read.ru${currentPath}`}>
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:site_name" content="Опера глазами читателя">
+    <meta property="og:image" content="https://opera-read.ru/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content={`${title} | Опера глазами читателя`}>
+    <meta name="twitter:description" content="Подробные статьи о сюжетах опер, либретто и истории создания великих произведений">
+    <meta name="twitter:image" content="https://opera-read.ru/og-image.png">
+    
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- View Transitions -->
     <ViewTransitions />
     
+    <!-- Favicons & Icons -->
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="ЧитаяОперу" />
+    <meta name="theme-color" content="#802525">
+    
+    <!-- Web App Manifest -->
     <link rel="manifest" href="/site.webmanifest" />
+    
+    <!-- Structured Data - Organization -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Опера глазами читателя",
+      "url": "https://opera-read.ru",
+      "logo": "https://opera-read.ru/logo.png",
+      "description": "Подробные статьи о сюжетах опер, либретто и истории создания великих произведений",
+      "sameAs": [],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "Customer Service",
+        "email": "info@opera-read.ru"
+      }
+    })} />
+    
+    <!-- Structured Data - WebSite (Search Action) -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Опера глазами читателя",
+      "url": "https://opera-read.ru",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://opera-read.ru?search={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    })} />
 
     <style is:global>
         ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; opacity: 1 !important; }

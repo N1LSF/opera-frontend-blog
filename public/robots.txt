@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /_astro/
+Disallow: /dist/
+
+Sitemap: https://opera-read.ru/sitemap-index.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1

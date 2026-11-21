@@ -15,23 +15,27 @@ export function urlFor(source) {
   return builder.image(source);
 }
 
-export function articleImageUrl(source, width = 1200) {
+export function articleImageUrl(source, width = 1200, aspectRatio = null) {
   if (!source) return null;
   
-  const builder = urlFor(source)
+  const baseBuilder = urlFor(source)
     .width(width)
-    .height(Math.round(width * 9 / 16))
     .auto('format');
   
-  // Если есть hotspot/crop данные, используем focalpoint для точного кропа
-  if (source.hotspot || source.crop) {
-    builder.fit('crop').crop('focalpoint');
-  } else {
-    // Fallback на обычный crop
-    builder.fit('crop');
+  // Если задан aspectRatio (например, для карточек), применяем его
+  if (aspectRatio) {
+    baseBuilder.height(Math.round(width / aspectRatio));
+    
+    // Для карточек с фиксированным aspect ratio используем hotspot
+    if (source.hotspot || source.crop) {
+      baseBuilder.fit('crop').crop('focalpoint');
+    } else {
+      baseBuilder.fit('crop');
+    }
   }
+  // Для hero-изображений НЕ задаём height — пусть показывается в оригинальных пропорциях
   
-  return builder.url();
+  return baseBuilder.url();
 }
 
 /**

@@ -2,10 +2,11 @@
 import { articleImageUrl } from '../lib/sanity';
 
 const { node } = Astro.props;
+const layout = node.layout || 'normal';
 ---
 
-<figure class="rich-text-image">
-    <img src={articleImageUrl(node, 960)} alt={node.alt || 'Изображение статьи'} />
+<figure class={`rich-text-image layout-${layout}`}>
+    <img src={articleImageUrl(node, layout === 'full' ? 1600 : (layout === 'small' ? 600 : 960))} alt={node.alt || 'Изображение статьи'} />
     {node.caption && <figcaption>{node.caption}</figcaption>}
 </figure>
 
@@ -14,7 +15,9 @@ const { node } = Astro.props;
         margin: 2.5em 0;
         text-align: center;
     }
-    .rich-text-image img {
+    
+    /* Обычное изображение (по умолчанию) */
+    .layout-normal img {
         width: 100%;
         height: auto;
         max-height: 550px;
@@ -24,6 +27,38 @@ const { node } = Astro.props;
         display: block;
         margin: 0 auto;
     }
+    
+    /* На всю ширину */
+    .layout-full {
+        margin-left: calc(-1 * var(--page-margin, 0px));
+        margin-right: calc(-1 * var(--page-margin, 0px));
+        max-width: none;
+        width: calc(100% + 2 * var(--page-margin, 0px));
+    }
+    
+    .layout-full img {
+        width: 100%;
+        height: auto;
+        max-height: 700px;
+        object-fit: contain;
+        border-radius: 0;
+        box-shadow: none;
+        display: block;
+    }
+    
+    /* Маленькое изображение */
+    .layout-small img {
+        max-width: 600px;
+        width: 100%;
+        height: auto;
+        max-height: 450px;
+        object-fit: contain;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        display: block;
+        margin: 0 auto;
+    }
+    
     figcaption {
         margin-top: 10px;
         font-size: 0.9rem;

@@ -16,12 +16,22 @@ export function urlFor(source) {
 }
 
 export function articleImageUrl(source, width = 1200) {
-  return urlFor(source)
+  if (!source) return null;
+  
+  const builder = urlFor(source)
     .width(width)
     .height(Math.round(width * 9 / 16))
-    .fit('crop')
-    .auto('format')
-    .url();
+    .auto('format');
+  
+  // Если есть hotspot/crop данные, используем focalpoint для точного кропа
+  if (source.hotspot || source.crop) {
+    builder.fit('crop').crop('focalpoint');
+  } else {
+    // Fallback на обычный crop
+    builder.fit('crop');
+  }
+  
+  return builder.url();
 }
 
 /**

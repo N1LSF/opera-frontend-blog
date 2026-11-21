@@ -109,10 +109,10 @@ const hasAttachment = post.attachment && post.attachment.url;
         </header>
 
         {post.mainImage && (
-            <div class="article-hero-image">
+            <div class={`article-hero-image hero-${post.mainImage.layout || 'horizontal'}`}>
                 <img
                     src={articleImageUrl(post.mainImage, 1200)}
-                    alt={post.title}
+                    alt={post.mainImage.alt || post.title}
                     loading="eager"
                 />
             </div>
@@ -249,10 +249,30 @@ const hasAttachment = post.attachment && post.attachment.url;
         align-items: center;
     }
 
-    .article-hero-image img {
+    /* Горизонтальный формат (по умолчанию) */
+    .hero-horizontal {
+        max-width: 100%;
+    }
+
+    .hero-horizontal img {
         width: 100%;
         height: auto;
         max-height: 600px;
+        object-fit: contain;
+        display: block;
+    }
+
+    /* Вертикальный формат */
+    .hero-vertical {
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-vertical img {
+        width: 100%;
+        height: auto;
+        max-height: 800px;
         object-fit: contain;
         display: block;
     }

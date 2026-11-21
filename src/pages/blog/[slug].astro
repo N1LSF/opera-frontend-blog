@@ -275,7 +275,7 @@ const hasAttachment = post.attachment && post.attachment.url;
 
     /* Вертикальный формат */
     .hero-vertical {
-        max-width: 600px;
+        max-width: 480px;
         margin-left: auto;
         margin-right: auto;
     }
@@ -283,7 +283,7 @@ const hasAttachment = post.attachment && post.attachment.url;
     .hero-vertical img {
         width: 100%;
         height: auto;
-        max-height: 800px;
+        max-height: 600px;
         object-fit: contain;
         display: block;
     }
@@ -428,11 +428,13 @@ const hasAttachment = post.attachment && post.attachment.url;
 <style is:global>
     .editorial-content {
         font-family: var(--font-body);
-        font-size: 1.15rem;
-        line-height: 1.75;
-        color: #333333;
-        text-align: justify;
+        font-size: 1.125rem;
+        line-height: 1.8;
+        color: #1a1a1a;
+        text-align: left;
         position: relative;
+        max-width: 65ch;
+        margin: 0 auto;
     }
 
     .editorial-content::before {
@@ -450,7 +452,7 @@ const hasAttachment = post.attachment && post.attachment.url;
         z-index: 0;
     }
 
-    .editorial-content p { margin-bottom: 1.2em; }
+    .editorial-content p { margin-bottom: 1.5em; }
     .editorial-content h2 { font-family: var(--font-head); font-size: 2.2rem; font-weight: 400; margin: 2em 0 0.8em; color: var(--text-main); line-height: 1.3; text-align: left; }
     .editorial-content h3 { font-family: var(--font-head); font-size: 1.6rem; font-weight: 400; margin: 1.8em 0 0.6em; color: var(--text-main); text-align: left; }
     .editorial-content strong { font-weight: 600; color: #111; }
